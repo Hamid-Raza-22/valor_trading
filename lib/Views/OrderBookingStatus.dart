@@ -534,7 +534,7 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
                               clearFilters();
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
+                              backgroundColor: Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5.0),
                               ),

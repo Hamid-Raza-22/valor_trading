@@ -147,7 +147,7 @@ class RecoveryForm_2ndPage extends StatelessWidget {
   Future<void> generateAndSharePDF(String recoveryId, String date, String shopName,
       String cashRecovery, String netBalance) async {
     final pdf = pw.Document();
-    final image = pw.Image(pw.MemoryImage(Uint8List.fromList((await rootBundle.load('assets/images/b1.png')).buffer.asUint8List())));
+    final image = pw.Image(pw.MemoryImage(Uint8List.fromList((await rootBundle.load('assets/images/mxlogo-01.png')).buffer.asUint8List())));
 
     // Define a custom page format with margins
     const pdfPageFormat = pw.PdfPageFormat(
@@ -175,7 +175,7 @@ class RecoveryForm_2ndPage extends StatelessWidget {
                     width: 120,
                   ),
                   pw.SizedBox(width: 10.0), // Space between logo and title
-                  pw.Text('Courage ERP', style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold, color: PdfColors.green)),
+                  pw.Text('Valor Trading', style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold, color: PdfColors.black)),
                 ],
               ),
             ),

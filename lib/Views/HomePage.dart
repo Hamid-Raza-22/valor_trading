@@ -576,7 +576,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
         msg: "Data is being posted, please wait.",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.orange,
+        backgroundColor: Color(0xFF9615DB),
         textColor: Colors.white,
         fontSize: 16.0,
       );
@@ -655,7 +655,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
       child: Scaffold(
         appBar:AppBar(
             automaticallyImplyLeading: false,
-            backgroundColor: Colors.green,
+            backgroundColor: Color(0xFF212529),
             toolbarHeight: 80.0,
             title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -677,12 +677,12 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                       Material(
                         elevation: 10.0,  // Set the elevation here
                         shape: const CircleBorder(),
-                        color: Colors.deepOrangeAccent,
+                        color: Colors.purple.shade400,
                         child: Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.deepOrangeAccent,
+                              color: Colors.purpleAccent,
                               width: 0.1,
                             ),
                             //borderRadius: BorderRadius.circular(1),
@@ -849,7 +849,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                              }
                             },
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white, backgroundColor: Colors.green,
+                              foregroundColor: Colors.white, backgroundColor: Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -904,7 +904,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                               }
                              },
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white, backgroundColor: Colors.green,
+                              foregroundColor: Colors.white, backgroundColor: Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -980,7 +980,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                               });
                             },
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white, backgroundColor: Colors.green,
+                              foregroundColor: Colors.white, backgroundColor: Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -1061,7 +1061,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                             },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
-                              backgroundColor: Colors.green,
+                              backgroundColor:Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -1120,7 +1120,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                               // }
                             },
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white, backgroundColor: Colors.green,
+                              foregroundColor: Colors.white, backgroundColor: Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -1161,14 +1161,14 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
               },
               icon: Icon(
                 isClockedIn ? Icons.timer_off : Icons.timer,
-                color: isClockedIn ? Colors.red : Colors.green,
+                color: isClockedIn ?Colors.white : Colors.white,
               ),
               label: Text(
                 isClockedIn ? 'Clock Out' : 'Clock In',
                 style: const TextStyle(fontSize: 14),
               ),
               style: ElevatedButton.styleFrom(
-                foregroundColor: isClockedIn ? Colors.red : Colors.green, backgroundColor: Colors.white,
+                foregroundColor: isClockedIn ?Colors.white : Colors.white, backgroundColor:  Color(0xFF212529),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

@@ -279,7 +279,7 @@ class ShopVisitState extends State<ShopVisit> {
         dropdownItems = cachedShopNames!.map((dynamic item) => item.toString()).toSet().toList();
       });
     } else {
-      if (userDesignation == 'RSM' || userDesignation == 'NSM' || userDesignation == 'SM' || userDesignation == 'SPO' || userDesignation == 'SOS') {
+      if (userDesignation == 'RSM' || userDesignation == 'NSM' || userDesignation == 'SM' || userDesignation == 'ASM' || userDesignation == 'SPO' || userDesignation == 'SOS') {
         await fetchShopNamesAll();
       } else {
         await fetchShopNames();
@@ -985,7 +985,7 @@ class ShopVisitState extends State<ShopVisit> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor:Color(0xFF212529),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
@@ -1190,7 +1190,7 @@ class ShopVisitState extends State<ShopVisit> {
                             });
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: Color(0xFF212529),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
@@ -1378,7 +1378,7 @@ class ShopVisitState extends State<ShopVisit> {
                           ),
                           child: showLoading
                               ? const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF212529)),
                           )
                               : const Text('No Order'),
                         ),
@@ -1414,7 +1414,7 @@ class ShopVisitState extends State<ShopVisit> {
               value: value,
               onChanged: onChanged,
               checkColor: Colors.white,
-              activeColor: Colors.green,
+              activeColor: Color(0xFF212529),
             ),
             if (!value)
               const Icon(

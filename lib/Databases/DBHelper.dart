@@ -26,7 +26,7 @@ class DBHelper {
 
   Future<Database> initDatabase() async {
     io.Directory documentDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentDirectory.path, 'shop.db');
+    String path = join(documentDirectory.path, 'valorTrading.db');
     var db = await openDatabase(
       path,
       version: 2, // Increment the version number

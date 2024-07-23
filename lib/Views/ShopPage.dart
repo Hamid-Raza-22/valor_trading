@@ -396,7 +396,7 @@ bool isOrderConfirmedback = false;
         msg: 'Data saved successfully!',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF212529),
         textColor: Colors.white,
       );
     } else {
@@ -527,7 +527,7 @@ bool isOrderConfirmedback = false;
                                     ),
                                   ),
                                 ),
-                                if (userDesignation != 'SM' && userDesignation != 'NSM' && userDesignation != 'RSM' && userDesignation != 'SPO'  && userDesignation != 'SOS') TextFormField(
+                                if (userDesignation != 'SM' && userDesignation != 'NSM' && userDesignation != 'RSM' && userDesignation != 'ASM' && userDesignation != 'SPO'  && userDesignation != 'SOS') TextFormField(
                                   controller: cityController,
 
                                   readOnly: true,
@@ -637,7 +637,6 @@ bool isOrderConfirmedback = false;
                               ],
                             ),
                             const SizedBox(height: 10),
-
                             // Text Field 3 - Owner Name
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -677,7 +676,6 @@ bool isOrderConfirmedback = false;
                               ],
                             ),
                             const SizedBox(height:10),
-
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -722,9 +720,7 @@ bool isOrderConfirmedback = false;
                                 ),
                               ],
                             ),
-
                             const SizedBox(height: 10),
-
                             // Text Field 5 - Phone Number
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -768,8 +764,6 @@ bool isOrderConfirmedback = false;
                                 ),
                               ],
                             ),
-
-
                             const SizedBox(height: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -811,7 +805,6 @@ bool isOrderConfirmedback = false;
                                 ),
                               ],
                             ),
-
                              const SizedBox(height: 20),
                             // ElevatedButton(
                             //   onPressed: () async {
@@ -889,7 +882,7 @@ bool isOrderConfirmedback = false;
                                      : () async {_validateAndSave();},
 
                                    style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.white, backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white, backgroundColor: const Color(0xFF212529),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),

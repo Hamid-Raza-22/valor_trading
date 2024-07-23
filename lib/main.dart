@@ -127,7 +127,7 @@ Future<void> _clearDatabaseIfFirstLaunch() async {
 
   if (isFirstLaunch) {
     io.Directory documentDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentDirectory.path, 'shop.db');
+    String path = join(documentDirectory.path, 'valorTrading.db');
 
     if (await io.File(path).exists()) {
       // await deleteDatabase(path);

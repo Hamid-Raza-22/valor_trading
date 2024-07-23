@@ -238,7 +238,7 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
                                   msg: "Order confirmed!",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
-                                  backgroundColor: Colors.green,
+                                  backgroundColor: Color(0xFF212529),
                                   textColor: Colors.white,
                                 );
                                 setState(() {
@@ -255,14 +255,14 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
                                 }},
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
-                                backgroundColor: Colors.green, // Set the color of the button
+                                backgroundColor: Color(0xFF212529), // Set the color of the button
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8), // Optional: Set border radius
                                 ),
                               ),
                               child:  showLoading
                                   ? const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                               )
                                   :const Text('Re Confirm'),
                             ),
@@ -295,8 +295,7 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-
-                                backgroundColor: Colors.orange,
+                                backgroundColor:  Color(0xFF212529),
                                 foregroundColor: Colors.white,
                                 // Set the background color of the button
                                 // Set the background color of the button
@@ -312,7 +311,6 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
 
                     ],
                   ),
-
                   Column(children: [
                     buildSizedBox(10),
                     Align(
@@ -351,7 +349,6 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
                         ),
                       ),
                     ),
-
                   ]
                   ),
                 ],
@@ -479,7 +476,7 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
       List<dynamic> totalAmounts, dynamic totalAmount, dynamic creditLimit,
       dynamic requiredDelivery) async {
     final pdf = pw.Document();
-    final image = pw.Image(pw.MemoryImage(Uint8List.fromList((await rootBundle.load('assets/images/b1.png')).buffer.asUint8List())));
+    final image = pw.Image(pw.MemoryImage(Uint8List.fromList((await rootBundle.load('assets/images/mxlogo-01.png')).buffer.asUint8List())));
     final totalQuantity = calculateTotalQuantity(quantities.cast<String>());
 
     const itemsPerPage = 7; // Adjust this value based on your requirement
@@ -515,7 +512,7 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
                             height: 150,
                             width: 150,
                           ),
-                          pw.Text('Valor Trading', style: pw.TextStyle(fontSize: 30, fontWeight: pw.FontWeight.bold, color: PdfColors.green)),
+                          pw.Text('Valor Trading', style: pw.TextStyle(fontSize: 30, fontWeight: pw.FontWeight.bold, color: PdfColors.black)),
                         ],
                       ),
                     ],
@@ -688,7 +685,7 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
     return ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
+          backgroundColor: Color(0xFF212529),
           foregroundColor: Colors.white,
           elevation: 10,
           shape: RoundedRectangleBorder(
