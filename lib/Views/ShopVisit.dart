@@ -1,7 +1,8 @@
 import 'dart:convert' show base64Decode;
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/animation.dart' show AlwaysStoppedAnimation, Color;
 import 'package:flutter/foundation.dart' show Key, Uint8List, kDebugMode;
-import 'package:flutter/material.dart' show Align, Alignment, AppBar, Axis, BorderRadius, BorderSide, BoxDecoration, BoxFit, BuildContext, Card, Center, Checkbox, CircularProgressIndicator, Colors, Column, Container, CrossAxisAlignment, DataCell, DataColumn, DataRow, DataTable, EdgeInsets, ElevatedButton, FocusNode, FocusScope, Form, FormState, GestureDetector, GlobalKey, Icon, Icons, Image, InputBorder, InputDecoration, Key, ListTile, MainAxisAlignment, MaterialPageRoute, MediaQuery, Navigator, OutlineInputBorder, Padding, RoundedRectangleBorder, RouteSettings, Row, Scaffold, ScaffoldMessenger, SingleChildScrollView, SizedBox, SnackBar, Stack, State, StatefulWidget, Text, TextEditingController, TextField, TextFormField, TextInputType, TextStyle, ValueListenableBuilder, ValueNotifier, Widget, imageCache;
+import 'package:flutter/material.dart' show Align, Alignment, AppBar, Axis, BorderRadius, BorderSide, BoxDecoration, BoxFit, BuildContext, Card, Center, Checkbox, CircularProgressIndicator, Colors, Column, Container, CrossAxisAlignment, DataCell, DataColumn, DataRow, DataTable, EdgeInsets, ElevatedButton, Expanded, FocusNode, FocusScope, Form, FormState, GestureDetector, GlobalKey, Icon, Icons, Image, InputBorder, InputDecoration, Key, ListTile, MainAxisAlignment, MaterialPageRoute, MediaQuery, Navigator, OutlineInputBorder, Padding, RoundedRectangleBorder, RouteSettings, Row, Scaffold, ScaffoldMessenger, SingleChildScrollView, SizedBox, SnackBar, Stack, State, StatefulWidget, Text, TextEditingController, TextField, TextFormField, TextInputType, TextStyle, ValueListenableBuilder, ValueNotifier, Widget, imageCache;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
@@ -100,6 +101,7 @@ class ShopVisitState extends State<ShopVisit> {
   List<DataRow> filteredRows = [];
 
   final stockcheckitemsViewModel = Get.put(StockCheckItemsViewModel());
+  final productsitemsViewModel = Get.put(ProductsViewModel());
 
   int? shopVisitId;
   int? stockcheckitemsId;
@@ -185,6 +187,8 @@ class ShopVisitState extends State<ShopVisit> {
     super.initState();
     _checkUserIdAndFetchShopNames();
     data();
+    BrandNameController.clear();
+    // BrandNameController.dispose();
     // serialCounter=(dbHelper.getLatestSerialNo(userId) as int?)!;
   shopNameNotifier = ValueNotifier<String>(selectedItem);
   productsController.rows;
@@ -597,63 +601,104 @@ class ShopVisitState extends State<ShopVisit> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'Shop Name',
-                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Brand',
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
                     ),
-                 GestureDetector(
-                  onTap: () async {
-                   //z await _checkUserIdAndFetchShopNames();
-                    _shopImageController.clearShopImageFile();
-                    ShopNameController.clear();
-                  },
-                  child: SizedBox(
-                      height: 30,
-                      child:TypeAheadField<String>(
-                        textFieldConfiguration: TextFieldConfiguration(
-                          focusNode: _shopNameFocusNode, // Assign the focus node here
-                          controller: TextEditingController(text: selectedItem),
-                          decoration: InputDecoration(
-                            enabled: false,
-                            hintText: '-------Select Shop------',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 30,
+                            child: DropdownSearch<String>(
+                              items: brandDropdownItems,
+                              selectedItem: globalselectedbrand,
+                              dropdownDecoratorProps: DropDownDecoratorProps(
+                                dropdownSearchDecoration: InputDecoration(
+                                  hintText: '-------Select Brand------',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(5.0),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+                                ),
+                              ),
+                              popupProps: PopupProps.dialog(
+                                showSearchBox: true,
+                              ),
+                              onChanged: (String? newValue) async {
+                                if (newValue != null && brandDropdownItems.contains(newValue)) {
+                                  setState(() {
+                                    _brandDropDownController.text = newValue;
+                                    globalselectedbrand = newValue;
+                                  });
+
+                                  print('userBrand $globalselectedbrand');
+                                  await productsitemsViewModel.fetchAllProductsModel();
+                                 await productsController.fetchProducts();
+                                  for (int i = 0; i < productsController.rows.length; i++) {
+                                    removeSavedValues(i);
+                                  }
+                                  productsController.controllers.clear();
+                                }
+                              },
                             ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 6.0,horizontal: 8.0),
                           ),
                         ),
-                        suggestionsCallback: (pattern) {
-                          return dropdownItems
-                              .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-                              .toList();
-                        },
-                        itemBuilder: (context, suggestion) {
-                          return ListTile(
-                            title: Text(suggestion),
-                          );
-                        },
-                        onSuggestionSelected: (suggestion) async {
-                          // Validate that the selected item is from the list
-                          if (dropdownItems.contains(suggestion)) {
-                            setState(() {
-                              imageCache.clear();
-                              selectedItem = suggestion;
-                              // shopName = selectedItem;
-                              shopNameNotifier.value = selectedItem; // Update the shop name
-                            });
-                            updateShopImage();
-                            productsController.rows;
-                            productsController.fetchProducts();
-                            for (int i = 0; i < productsController.rows.length; i++) {
-                              removeSavedValues(i);
-                            }
-                          }
-                        },
+                      ],
+                    ),
+              const SizedBox(height: 10),
+              const Text(
+                'Shop Name',
+                style: TextStyle(fontSize: 16, color: Colors.black),
+              ),
+              GestureDetector(
+                onTap: () async {
+                  // await _checkUserIdAndFetchShopNames();
+                  _shopImageController.clearShopImageFile();
+                  ShopNameController.clear();
+                },
+                child: SizedBox(
+                  height: 30,
+                  child: DropdownSearch<String>(
+                    items: dropdownItems,
+                    selectedItem: selectedItem,
+                    dropdownDecoratorProps: DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        hintText: '-------Select Shop------',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5.0),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
                       ),
+                    ),
+                    popupProps: PopupProps.menu(
+                      showSearchBox: true,
+                    ),
+                    onChanged: (String? newValue) async {
+                      if (newValue != null && dropdownItems.contains(newValue)) {
+                        setState(() {
+                          imageCache.clear();
+                          selectedItem = newValue;
+                          shopNameNotifier.value = selectedItem; // Update the shop name
+                        });
+                        updateShopImage();
+                        productsController.rows;
+                        productsController.fetchProducts();
+                        for (int i = 0; i < productsController.rows.length; i++) {
+                          removeSavedValues(i);
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10.0),
 
-                  ),),
-                    const SizedBox(height: 10.0),
-                    const Align(
+
+              const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'Shop Address',
@@ -742,96 +787,37 @@ class ShopVisitState extends State<ShopVisit> {
                       ),
                     ),
 
-                    const SizedBox(height: 10),
-                    // const Align(
+
+
+
+
+
+              // const Align(
                     //   alignment: Alignment.centerLeft,
                     //   child: Text(
                     //     'Brand',
                     //     style: TextStyle(fontSize: 16, color: Colors.black),
                     //   ),
                     // ),
-                    // Row(
-                    //   children: [
-                    //     Expanded(
-                    //       child: SizedBox(
-                    //         height: 30,
-                    //         child: TypeAheadFormField<String>(
-                    //           textFieldConfiguration: TextFieldConfiguration(
-                    //             decoration: InputDecoration(
-                    //               contentPadding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
-                    //               enabled: false, // Set enabled to false to make it read-only
-                    //               border: OutlineInputBorder(
-                    //                 borderRadius: BorderRadius.circular(5.0),
-                    //               ),
-                    //             ),
-                    //             controller: _brandDropDownController,
-                    //           ),
-                    //           suggestionsCallback: (pattern) {
-                    //             return brandDropdownItems
-                    //                 .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-                    //                 .toList();
-                    //           },
-                    //           itemBuilder: (context, itemData) {
-                    //             return ListTile(
-                    //               title: Text(itemData),
-                    //             );
-                    //           },
-                    //           onSuggestionSelected: (itemData) async {
-                    //             // Validate that the selected item is from the list
-                    //             if (brandDropdownItems.contains(itemData)) {
-                    //               setState(() {
-                    //                 _brandDropDownController.text = itemData;
-                    //                 globalselectedbrand = itemData;
-                    //               });
-                    //               // Call the callback to pass the selected brand to FinalOrderBookingPage
-                    //               // widget.onBrandItemsSelected(itemData);
-                    //               // if (kDebugMode) {
-                    //               //   print('Selected Brand: $itemData');
-                    //               //   print(globalselectedbrand);
-                    //               // }
+                    // SizedBox(
+                    //   height: 30,
+                    //   child: TextFormField(enabled: false, readOnly: true,
+                    //     controller: BrandNameController,
                     //
-                    //               productsController.fetchProducts();
-                    //               for (int i = 0; i < productsController.rows.length; i++) {
-                    //                 removeSavedValues(i);
-                    //               }
-                    //               productsController.controllers.clear();
-                    //             }
-                    //           },
-                    //         ),
+                    //     decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(vertical: 6.0,horizontal: 8.0),
+                    //       border: OutlineInputBorder(
+                    //         borderRadius: BorderRadius.circular(5.0),
                     //       ),
                     //     ),
-                    //   ],
+                    //
+                    //     validator: (value) {
+                    //       if (value!.isEmpty) {
+                    //         return 'Please enter some text';
+                    //       }
+                    //       return null;
+                    //     },
+                    //   ),
                     // ),
-                    //
-                    //
-                    //
-                    //
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Brand',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 30,
-                      child: TextFormField(enabled: false, readOnly: true,
-                        controller: BrandNameController,
-
-                        decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(vertical: 6.0,horizontal: 8.0),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5.0),
-                          ),
-                        ),
-
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter some text';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
                     // const Align(
                     //   alignment: Alignment.center,
                     //   child: Text(
@@ -859,7 +845,7 @@ class ShopVisitState extends State<ShopVisit> {
                                 child: SizedBox(
                                   height: 400, // Set the desired height
                                   width: MediaQuery.of(context).size.width * 0.9, // Set the desired width
-                                  child:Card(
+                                  child: Card(
                                     elevation: 5,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10.0), // Adjust the radius as needed
@@ -885,9 +871,8 @@ class ShopVisitState extends State<ShopVisit> {
                                               ),
                                             ),
                                           ),
-                                          // Add vertical scroll direction
-                                          //  Obx(() =>
-                                          SingleChildScrollView(
+                                          // Wrap the DataTable with Obx
+                                          Obx(() => SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
                                             child: DataTable(
                                               columns: const [
@@ -896,16 +881,17 @@ class ShopVisitState extends State<ShopVisit> {
                                               ],
                                               rows: filteredRows.isNotEmpty ? filteredRows : productsController.rows,
                                             ),
-                                          ),
-                                          // ),
+                                          )),
                                         ],
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ],),
-                        ),
+                            ],
+                          ),
+                        )
+
 
                       ],
                     ),
@@ -1086,7 +1072,7 @@ class ShopVisitState extends State<ShopVisit> {
                               return;
                             }
 
-                            if (_imageFile == null || ShopNameController.text.isEmpty) {
+                            if (_imageFile == null || ShopNameController.text.isEmpty|| _brandDropDownController.text.isEmpty) {
                               Fluttertoast.showToast(
                                 msg: 'Please fulfill all requirements before proceeding.',
                                 toastLength: Toast.LENGTH_SHORT,
@@ -1467,7 +1453,7 @@ class Products extends GetxController {
   List<TextEditingController> controllers = [];
 
   Future<void> fetchProducts() async {
-    await productsViewModel.fetchProductsByBrand(userBrand);
+    await productsViewModel.fetchProductsByBrand(globalselectedbrand);
     var products = productsViewModel.allProducts;
 
     // Clear existing rows and controllers before adding new ones

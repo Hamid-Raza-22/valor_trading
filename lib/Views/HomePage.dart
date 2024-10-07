@@ -1,6 +1,6 @@
 import 'dart:async' show Completer, Future, Timer;
 import 'package:flutter/foundation.dart' show Key, kDebugMode;
-import 'package:flutter/material.dart' show AlertDialog, Align, Alignment, AppBar, Border, BorderRadius, BoxDecoration, BoxShape, BuildContext, Center, CircleBorder, CircularProgressIndicator, Colors, Column, Container, EdgeInsets, ElevatedButton, Icon, IconButton, IconData, Icons, Key, MainAxisAlignment, Material, MaterialApp, MaterialPageRoute, Navigator, Padding, RoundedRectangleBorder, Row, Scaffold, SingleChildScrollView, SizedBox, State, StatefulWidget, StatelessWidget, Text, TextButton, TextStyle, Widget, WidgetsBinding, WidgetsBindingObserver, WidgetsFlutterBinding, WillPopScope, runApp, showDialog;
+import 'package:flutter/material.dart' show AlertDialog, Align, Alignment, AppBar, Border, BorderRadius, BoxDecoration, BoxShape, BuildContext, Center, CircleBorder, CircularProgressIndicator, Colors, Column, Container, EdgeInsets, ElevatedButton, Icon, IconButton, IconData, Icons, InputDecoration, Key, MainAxisAlignment, MainAxisSize, Material, MaterialApp, MaterialPageRoute, Navigator, OutlineInputBorder, Padding, RoundedRectangleBorder, Row, Scaffold, SingleChildScrollView, SizedBox, State, StatefulWidget, StatelessWidget, Text, TextButton, TextEditingController, TextField, TextStyle, Widget, WidgetsBinding, WidgetsBindingObserver, WidgetsFlutterBinding, WillPopScope, runApp, showDialog;
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart' show FlutterBackgroundService;
 import 'package:geolocator/geolocator.dart' show Geolocator, LocationPermission, Position;
@@ -42,6 +42,8 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth, User;
 import 'package:location/location.dart' as loc;
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 
 //tarcker
@@ -98,7 +100,8 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
   final orderdetailsViewModel = Get.put(OrderDetailsViewModel());
   final locationViewModel = Get.put(LocationViewModel());
   final  ownerViewModeldata =  ShopVisitState();
-
+  TextEditingController allowanceController = TextEditingController();
+  TextEditingController fuelController = TextEditingController();
 // Add this line
   List<String> shopList = [];
   String? selectedShop2;
@@ -265,7 +268,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
       userNames = prefs.getString('userNames') ?? '';
       userCitys = prefs.getString('userCitys') ?? '';
       userDesignation = prefs.getString('userDesignation') ?? '';
-      userBrand = prefs.getString('userBrand') ?? '';
+      // userBrand = prefs.getString('userBrand') ?? '';
     });
   }
 
@@ -1089,6 +1092,177 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        SizedBox(
+                            height: 150,
+                            width: 150,
+                            child:ElevatedButton(
+                              onPressed: () async {
+                                setState(() {
+                                  isLoadingReturn = true; // assuming isLoading is a boolean state variable
+                                });
+
+                                // Delay for 5 seconds
+                                // await Future.delayed(Duration(seconds: 5));
+
+                                bool isConnected = await isInternetAvailable();
+
+                                if (!isClockedIn) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Clock In Required'),
+                                      content: const Text('Please clock in before accessing the adding the Allowance/Fuel.'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                } else if (!isConnected) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Internet Data Required'),
+                                      content: const Text('Please check your internet connection before adding the Allowance/Fuel.'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+
+                                else {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: const Text(
+                                            'Enter Allowance and Fuel'),
+                                        content: SingleChildScrollView(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              TextField(
+                                                controller: allowanceController,
+                                                keyboardType: TextInputType
+                                                    .number,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Allowance (Rs)',
+                                                  border: OutlineInputBorder(),
+                                                  prefixIcon: Icon(Icons.money),
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              TextField(
+                                                controller: fuelController,
+                                                keyboardType: TextInputType
+                                                    .number,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Fuel (Rs)',
+                                                  border: OutlineInputBorder(),
+                                                  prefixIcon: Icon(
+                                                      Icons.local_gas_station),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text('Cancel'),
+                                            style: TextButton.styleFrom(
+                                              backgroundColor: Colors.black,
+                                              foregroundColor: Colors.white,
+                                              textStyle: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              String allowance = allowanceController
+                                                  .text;
+                                              String fuel = fuelController.text;
+
+                                              // API call
+                                              var response = await http.post(
+                                                Uri.parse(
+                                                    'http://103.149.32.30:8080/ords/valor_trading/allowances/post/'),
+                                                headers: <String, String>{
+                                                  'Content-Type': 'application/json; charset=UTF-8',
+                                                },
+                                                body: jsonEncode(
+                                                    <String, String>{
+                                                      'userId': userId,
+                                                      'userName': userNames,
+                                                'time': _getFormattedtime(),
+                                                      'allowanceDate': _getFormattedDate(),
+                                                      'allowance': allowance,
+                                                      'fuel': fuel,
+                                                    }),
+                                              );
+
+                                              if (response.statusCode == 200) {
+                                                // If the server returns a 200 OK response
+                                                print(
+                                                    'Data posted successfully');
+                                              } else {
+                                                // If the server did not return a 200 OK response
+                                                print('Failed to post data');
+                                              }
+
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text('Submit'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.black,
+                                              foregroundColor: Colors.white,
+                                              textStyle: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
+
+                                setState(() {
+                                  isLoadingReturn = false; // set loading state to false after execution
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor:Color(0xFF212529),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: isLoadingReturn
+                                  ? const CircularProgressIndicator() // Show a loading indicator
+                                  : const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.payment,
+                                    color: Colors.white,
+                                    size: 50,
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text('Allowance/Fuel'),
+                                ],
+                              ),
+                            )
+
+                        ),
+                        const SizedBox(width: 10),
                         SizedBox(
                           height: 150,
                           width: 150,
