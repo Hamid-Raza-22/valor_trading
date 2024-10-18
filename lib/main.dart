@@ -2,8 +2,8 @@ import 'dart:async' show Future, Timer;
 import 'dart:io' as io;
 import 'dart:io' show Directory, InternetAddress, Platform, SocketException;
 import 'dart:ui' show DartPluginRegistrant;
+import 'package:connectivity/connectivity.dart';
 // import 'package:connectivity/connectivity.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart' show DeviceInfoPlugin;
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -224,10 +224,11 @@ Future<void> initializeServiceLocation() async {
 
 void monitorInternetConnection() {
   Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-    if (result == ConnectivityResult.mobile || result == ConnectivityResult.wifi) {
+    if (result == ConnectivityResult.mobile ||
+        result == ConnectivityResult.wifi) {
       // backgroundTask();
     }
-  } as void Function(List<ConnectivityResult> event)?);
+  });
 }
 Future<bool> isInternetAvailable() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
