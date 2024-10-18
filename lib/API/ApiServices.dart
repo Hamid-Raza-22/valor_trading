@@ -33,6 +33,7 @@ class ApiServices extends BaseApiServices {
       tokenEndpoint,
       identifier,
       secret,
+
     );
   }
 
