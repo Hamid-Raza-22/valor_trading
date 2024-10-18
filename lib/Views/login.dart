@@ -313,7 +313,7 @@ class LoginFormState extends State<LoginForm> {
                                 margin: const EdgeInsets.all(1.0),
                                 padding: const EdgeInsets.all(10.0),
                                 decoration: BoxDecoration(
-                                  color:Color(0xFF212529),
+                                  color:const Color(0xFF212529),
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 child: const Icon(
@@ -361,7 +361,7 @@ class LoginFormState extends State<LoginForm> {
                                 margin: const EdgeInsets.all(1.0),
                                 padding: const EdgeInsets.all(10.0),
                                 decoration: BoxDecoration(
-                                  color: Color(0xFF212529),
+                                  color: const Color(0xFF212529),
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 child: const Icon(
@@ -400,7 +400,7 @@ class LoginFormState extends State<LoginForm> {
                               width: 200,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: Color(0xFF212529),
+                                color: const Color(0xFF212529),
                                 borderRadius: BorderRadius.circular(14.0),
                               ),
                             ),
@@ -417,7 +417,7 @@ class LoginFormState extends State<LoginForm> {
                               onPressed: _isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
-                                backgroundColor: Color(0xFF212529),
+                                backgroundColor: const Color(0xFF212529),
                                 padding: EdgeInsets.zero,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14.0),
@@ -444,7 +444,7 @@ class LoginFormState extends State<LoginForm> {
 
                       ),
                       const SizedBox(height: 10.0),
-                      Center(
+                      const Center(
                         child: Text(
                           'V.1.0.0',
                           style: TextStyle(

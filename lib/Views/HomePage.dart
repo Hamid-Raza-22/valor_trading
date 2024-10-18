@@ -42,8 +42,6 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth, User;
 import 'package:location/location.dart' as loc;
 import 'package:permission_handler/permission_handler.dart';
 
-
-
 //tarcker
 final FirebaseAuth auth = FirebaseAuth.instance;
 final User? user = auth.currentUser;
@@ -576,7 +574,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
         msg: "Data is being posted, please wait.",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
-        backgroundColor: Color(0xFF9615DB),
+        backgroundColor: const Color(0xFF9615DB),
         textColor: Colors.white,
         fontSize: 16.0,
       );
@@ -655,7 +653,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
       child: Scaffold(
         appBar:AppBar(
             automaticallyImplyLeading: false,
-            backgroundColor: Color(0xFF212529),
+            backgroundColor: const Color(0xFF212529),
             toolbarHeight: 80.0,
             title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -849,7 +847,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                              }
                             },
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white, backgroundColor: Color(0xFF212529),
+                              foregroundColor: Colors.white, backgroundColor: const Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -904,7 +902,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                               }
                              },
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white, backgroundColor: Color(0xFF212529),
+                              foregroundColor: Colors.white, backgroundColor: const Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -980,7 +978,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                               });
                             },
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white, backgroundColor: Color(0xFF212529),
+                              foregroundColor: Colors.white, backgroundColor: const Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -1061,7 +1059,165 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                             },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
-                              backgroundColor:Color(0xFF212529),
+                              backgroundColor:const Color(0xFF212529),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: isLoadingReturn
+                                ? const CircularProgressIndicator() // Show a loading indicator
+                                : const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 50,
+                                ),
+                                SizedBox(height: 10),
+                                Text('Recovery'),
+                              ],
+                            ),
+                          )
+
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 150,
+                          width: 150,
+                          child: ElevatedButton(
+                            onPressed: () async{
+                              setState(() {
+                                isLoading = true; // assuming isLoading is a boolean state variable
+                              });
+                              bool isConnected = await isInternetAvailable();
+                              if (!isClockedIn) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Clock In Required'),
+                                    content: const Text('Please clock in before accessing the Return Page.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else if (!isConnected) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Internet Data Required'),
+                                    content: const Text('Please check your internet connection before accessing the Return Page.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                newDatabaseOutputs outputs = newDatabaseOutputs();
+                                await outputs.updateOrderBookingStatusData();
+                                await  outputs.updateAccountsData();
+
+                               await Navigator.push(context, MaterialPageRoute(
+                                    builder: (context) => const ReturnFormPage()));
+                              }
+                              setState(() {
+                                isLoading = false; // set loading state to false after execution
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white, backgroundColor: const Color(0xFF212529),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: isLoading
+                                ? const CircularProgressIndicator() // Show a loading indicator
+                                : const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  MyIcons.returnForm,
+                                  color: Colors.white,
+                                  size: 50,
+                                ),
+                                SizedBox(height: 10),
+                                Text('Return Form'),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        SizedBox(
+                          height: 150,
+                          width: 150,
+                          child:ElevatedButton(
+                            onPressed: () async {
+                              setState(() {
+                                isLoadingReturn = true; // assuming isLoading is a boolean state variable
+                              });
+
+                              // Delay for 5 seconds
+                             // await Future.delayed(Duration(seconds: 5));
+
+                              bool isConnected = await isInternetAvailable();
+
+                              if (!isClockedIn) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Clock In Required'),
+                                    content: const Text('Please clock in before accessing the Recovery.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else if (!isConnected) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Internet Data Required'),
+                                    content: const Text('Please check your internet connection before accessing the Recovery.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                // SharedPreferences prefs = await SharedPreferences.getInstance();
+                                // await prefs.remove('balance');
+                                newDatabaseOutputs outputs = newDatabaseOutputs();
+                                await outputs.updateOrderBookingStatusData();
+                               await  outputs.updateAccountsData();
+
+                               await Navigator.push(context, MaterialPageRoute(
+                                    builder: (context) => const RecoveryFromPage()));
+                              }
+
+                              setState(() {
+                                isLoadingReturn = false; // set loading state to false after execution
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor:const Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -1120,7 +1276,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                               // }
                             },
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white, backgroundColor: Color(0xFF212529),
+                              foregroundColor: Colors.white, backgroundColor: const Color(0xFF212529),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -1168,7 +1324,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                 style: const TextStyle(fontSize: 14),
               ),
               style: ElevatedButton.styleFrom(
-                foregroundColor: isClockedIn ?Colors.white : Colors.white, backgroundColor:  Color(0xFF212529),
+                foregroundColor: isClockedIn ?Colors.white : Colors.white, backgroundColor:  const Color(0xFF212529),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
