@@ -12,6 +12,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   geolocator_windows
   modal_progress_hud_nsn
   permission_handler_windows
+  printing
   url_launcher_windows
 )
 

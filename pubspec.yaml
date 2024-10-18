@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   firebase_core: ^3.2.0
   get: ^4.6.6
+  printing: ^5.7.2
   sqflite: ^2.3.0
   chat_gpt_sdk: ^2.2.5
   path_provider: ^2.0.5
