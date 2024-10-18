@@ -48,7 +48,7 @@ dependencies:
   http: ^1.1.0
   http_parser: ^4.0.2
   path: ^1.8.3
-  dropdown_search: ^5.0.6
+  dropdown_search: ^5.0.2
   dropdown_button2: ^2.3.9
   flutter_typeahead: ^4.8.0
   timezone_utc_offset:
@@ -109,6 +109,7 @@ dependencies:
   in_app_update: ^4.2.3
   hive_flutter: ^1.1.0
   serverpod: ^2.0.2
+  connectivity_plus: ^6.0.5
 
 dev_dependencies:
   flutter_test:
@@ -138,6 +139,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/images/courage.jpeg
+    - assets/images/mxlogo-01.png
     - assets/images/p2.png
     - assets/images/p1.png
     - assets/images/b1.png

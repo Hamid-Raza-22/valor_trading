@@ -201,7 +201,7 @@ class newDatabaseOutputs {
 
       try {
         var response1 = await api.getApi(
-            "$brandsApi$id");
+            brandsApi);
         inserted= await db.insertProductCategoryData(
             response1); //return True or False
         if (inserted) {
@@ -380,7 +380,7 @@ class newDatabaseOutputs {
 
       try {
         var response1 = await api.getApi(
-            "$productsApi$brand");
+            productsApi);
         inserted = await db.insertProductsData(
             response1); //return True or False
         if (inserted) {

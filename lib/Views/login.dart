@@ -108,29 +108,29 @@ class LoginFormState extends State<LoginForm> {
       var userName = await dblogin.getUserName(_emailController.text);
       var userCity = await dblogin.getUserCity(_emailController.text);
       var designation = await dblogin.getUserDesignation(_emailController.text);
-      var brand = await dblogin.getUserBrand(_emailController.text);
+      // var brand = await dblogin.getUserBrand(_emailController.text);
 
       setState(() {
         _loadingProgress = 40; // Update progress
       });
 
-      if (userName != null && userCity != null && designation != null && brand != null) {
+      if (userName != null && userCity != null && designation != null) {
         if (kDebugMode) {
-          print('User Name: $userName, City: $userCity, Designation: $designation, Brand: $brand');
+          print('User Name: $userName, City: $userCity, Designation: $designation');
         }
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString('userId', _emailController.text);
         prefs.setString('userNames', userName);
         prefs.setString('userCitys', userCity);
         prefs.setString('userDesignation', designation);
-        prefs.setString('userBrand', brand);
+        //prefs.setString('userBrand', brand);
 
         if (kDebugMode) {
           print('Saved userId: ${prefs.getString('userId')}');
           print('Saved userNames: ${prefs.getString('userNames')}');
           print('Saved userCitys: ${prefs.getString('userCitys')}');
           print('Saved userDesignation: ${prefs.getString('userDesignation')}');
-          print('Saved userBrand: ${prefs.getString('userBrand')}');
+          // print('Saved userBrand: ${prefs.getString('userBrand')}');
         }
 
         newDatabaseOutputs outputs = newDatabaseOutputs();
@@ -191,8 +191,8 @@ class LoginFormState extends State<LoginForm> {
     String? userNames = prefs.getString('userNames');
     String? userCitys = prefs.getString('userCitys');
     String? userDesignation = prefs.getString('userDesignation');
-    String? userBrand = prefs.getString('userBrand');
-    return userBrand != null && userBrand.isNotEmpty && userDesignation != null && userId != null && userId.isNotEmpty && userCitys != null && userCitys.isNotEmpty && userNames != null && userNames.isNotEmpty;
+   // String? userBrand = prefs.getString('userBrand');
+    return userDesignation != null && userId != null && userId.isNotEmpty && userCitys != null && userCitys.isNotEmpty && userNames != null && userNames.isNotEmpty;
   }
   // Future<void> checkUserIdAndFetchShopNames() async {
   //   SharedPreferences prefs = await SharedPreferences.getInstance();
