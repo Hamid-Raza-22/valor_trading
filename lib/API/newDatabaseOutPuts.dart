@@ -1191,12 +1191,14 @@ class newDatabaseOutputs {
     String? formattedDateTime = prefs.getString('lastInitializationDateTime');
     // String? id = prefs.getString('userId');
     if (formattedDateTime != null) {
+      print("formattedDateTimeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee$formattedDateTime");
       final db = DBHelper();
       final api = ApiServices();
       List<dynamic>? productsdata;
       try {
         productsdata = await api.getupdateData(
-            "$refProductsApi$userBrand/$formattedDateTime");
+            "$refProductsApi/$formattedDateTime");
+
       } catch (e) {
         if (kDebugMode) {
           print("Error fetching data from API: $e");
@@ -1597,7 +1599,7 @@ class newDatabaseOutputs {
     await updateOwnerData();
     await updateOrderMasterData();
     await updateOrderDetailsData();
-    await updateProductsData();
+    updateProductsData();
     await updateProductCategoryData();
     await updateOrderBookingStatusData();
     await updateRecoveryFormGetData();
