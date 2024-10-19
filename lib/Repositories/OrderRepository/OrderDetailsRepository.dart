@@ -15,7 +15,7 @@ class OrderDetailsRepository {
 
   Future<List<OrderDetailsModel>> getOrderDetails() async {
     var dbClient = await dbHelperOrderDetails.db;
-    List<Map> maps = await dbClient!.query('order_details', columns: ['id','order_master_id', 'productName', 'quantity', 'price', 'amount','userId','posted']);
+    List<Map> maps = await dbClient!.query('order_details', columns: ['id','details_date','order_master_id', 'productName', 'quantity', 'price', 'amount','userId','posted']);
     List<OrderDetailsModel> orderdetails = [];
     for (int i = 0; i < maps.length; i++) {
 
@@ -55,6 +55,7 @@ class OrderDetailsRepository {
             quantity: i['quantity'].toString(),
             amount: i['amount'].toString(),
             userId: i['userId'].toString(),
+            details_date: i['details_date'].toString()
           );
 
           try {

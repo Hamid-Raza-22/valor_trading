@@ -4,11 +4,14 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart' show AlertDialog, Align, Alignment, AppBar, Axis, BorderRadius, BorderSide, BoxConstraints, BuildContext, Card, Center, CircularProgressIndicator, Color, Colors, Column, ConnectionState, Container, CrossAxisAlignment, DataCell, DataColumn, DataRow, DataTable, DefaultTextStyle, EdgeInsets, ElevatedButton, Expanded, FontWeight, FutureBuilder, GestureDetector, Icon, Icons, InputDecoration, LayoutBuilder, ListTile, ListView, MainAxisAlignment, MainAxisSize, Navigator, OutlineInputBorder, RichText, RoundedRectangleBorder, Row, Scaffold, SingleChildScrollView, SizedBox, State, StateSetter, StatefulBuilder, StatefulWidget, Text, TextButton, TextEditingController, TextFormField, TextSpan, TextStyle, Widget, WidgetState, WidgetStateProperty, showDatePicker, showDialog;
 import 'package:flutter_typeahead/flutter_typeahead.dart' show TextFieldConfiguration, TypeAheadFormField;
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:path_provider/path_provider.dart';
-import 'package:printing/printing.dart';
+import 'package:share/share.dart';
+// import 'package:printing/printing.dart';
 import 'package:sqflite/sqflite.dart' show Database;
+import 'package:valor_trading/API/Globals.dart';
 import '../API/DatabaseOutputs.dart' show DatabaseOutputs;
 import '../Databases/DBHelper.dart' show DBHelper;
 import 'HomePage.dart';
@@ -136,42 +139,6 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
     setState(() {
       dropdownItems = shopNames.toSet().toList();
     });
-  }
-
-  Future<List<
-      Map<String, dynamic>>> fetchOrderBookingStatusDataWithDetails() async {
-    List<Map<String, dynamic>> data = await dbHelper
-        .getOrderBookingStatusDB() ?? [];
-
-    // Apply filters (Order No, Date Range, Shop, Status)
-    // ... (Existing filter code here)
-
-    // Create a new list to hold the modified maps
-    List<Map<String, dynamic>> resultData = [];
-
-    for (var row in data) {
-      // Create a mutable copy of the row
-      Map<String, dynamic> mutableRow = Map<String, dynamic>.from(row);
-
-      final Database? db = await DBHelper().db;
-      List<Map<String, dynamic>> orderDetails = await db!.query(
-        'orderDetailsData',
-        where: 'order_no = ?',
-        whereArgs: [row['order_no']],
-      );
-
-      // Add the order details to the mutable map
-      mutableRow['products'] = orderDetails.map((detail) =>
-      {
-        'product_name': detail['product_name'],
-        'quantity_booked': detail['quantity_booked']
-      }).toList();
-
-      // Add the modified row to the result list
-      resultData.add(mutableRow);
-    }
-
-    return resultData;
   }
 
   Future<List<Map<String, dynamic>>> fetchOrderBookingStatusData() async {
@@ -350,6 +317,280 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
 
     return rows;
   }
+
+  List<DataRow> dataRows = []; // Variable to hold the DataRows
+  String _getFormattedDate() {
+    final now = DateTime.now();
+    final formatter = DateFormat('dd-MMM-yyyy');
+    return formatter.format(now);
+  }
+
+  void sharePdf() async {
+    final pdf = pw.Document();
+    String currentDate = await _getFormattedDate();
+    String ordersDate = startDateController.text.isNotEmpty ? startDateController.text : 'Date Not Selected';
+
+
+    // Calculate total orders and total amount
+    int totalOrders = dataRows.length;
+    double totalAmount = 0.0;
+    List<List<String>> rowsData = [];
+
+    for (var row in dataRows) {
+      if (row.cells.length > 3 && row.cells[3].child is Text) {
+        String amountText = (row.cells[3].child as Text).data?.trim() ?? '0';
+        amountText = amountText.replaceAll(RegExp(r'[^\d.]'), '');
+        double amount = double.tryParse(amountText) ?? 0;
+        totalAmount += amount;
+
+        List<String> rowData = [
+          (row.cells[0].child as Text).data ?? '', // Order No
+          (row.cells[2].child as Text).data ?? '', // Shop Name
+          (row.cells[3].child as Text).data?.replaceAll(RegExp(r'\s+'), ' ') ?? '' // Amount
+        ];
+        rowsData.add(rowData);
+      }
+    }
+
+    int itemsPerPage = 20;
+    int pages = (rowsData.length / itemsPerPage).ceil();
+
+    for (int i = 0; i < pages; i++) {
+      var start = i * itemsPerPage;
+      var end = (start + itemsPerPage < rowsData.length) ? start + itemsPerPage : rowsData.length;
+      var currentPageRows = rowsData.sublist(start, end);
+
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Center(
+                  child: pw.Text(
+                    'Valor Trading Order Booking Status Page: ${i + 1}',
+                    style: pw.TextStyle(
+                      fontSize: 20,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.black,
+                    ),
+                  ),
+                ),
+                pw.SizedBox(height: 10),
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    borderRadius: pw.BorderRadius.circular(4),
+                    color: PdfColors.grey300,
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('Booker ID: $userId', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Booker Name: $userNames', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Print Date: $currentDate', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Orders Date: $ordersDate', style: pw.TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                ),
+                pw.SizedBox(height: 20),
+                pw.Table.fromTextArray(
+                  headers: ['Order No', 'Shop Name', 'Amount'],
+                  data: currentPageRows,
+                  headerStyle: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 12,
+                    color: PdfColors.white,
+                  ),
+                  headerDecoration: pw.BoxDecoration(
+                    color: PdfColors.black,
+                  ),
+                  cellStyle: pw.TextStyle(fontSize: 10),
+                  cellAlignment: pw.Alignment.center,
+                  oddRowDecoration: pw.BoxDecoration(
+                    color: PdfColors.grey200,
+                  ),
+                  border: pw.TableBorder(
+                    horizontalInside: pw.BorderSide(width: 0.5, color: PdfColors.grey),
+                    bottom: pw.BorderSide(width: 0.5, color: PdfColors.black),
+                  ),
+                  cellPadding: pw.EdgeInsets.all(6),
+                ),
+                if (i == pages - 1) ...[
+                  pw.SizedBox(height: 20),
+                  pw.Divider(),
+                  pw.Container(
+                    padding: const pw.EdgeInsets.all(8),
+                    decoration: pw.BoxDecoration(
+                      borderRadius: pw.BorderRadius.circular(4),
+                      color: PdfColors.grey300,
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Total Orders: $totalOrders', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('Total Amount: PKR ${totalAmount.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
+      );
+    }
+
+    final tempDir = await getTemporaryDirectory();
+    final pdfFile = File("${tempDir.path}/order_booking_status.pdf");
+    await pdfFile.writeAsBytes(await pdf.save());
+    await Share.shareFiles([pdfFile.path], text: 'Order Booking Status');
+  }
+
+
+
+  void shareProductPdf() async {
+    final pdf = pw.Document();
+
+    // Get the current date
+    String currentDate = _getFormattedDate(); // Ensure this function returns the correct formatted date
+    String ordersDate = startDateController.text.isNotEmpty ? startDateController.text : 'Date Not Selected';
+    print(ordersDate);
+
+    // Fetch all rows from the database for the current date
+    final Database? db = await DBHelper().db;
+    List<Map<String, dynamic>> queryRows = await db!.query(
+      'orderDetailsData',
+      where: 'details_date = ?',
+      whereArgs: [ordersDate],
+    );
+
+    // Prepare product data for the PDF
+    List<List<String>> productTableData = queryRows.map((order) {
+      String productName = order['product_name'] ?? 'N/A'; // Adjust key as per your data structure
+      String quantity = order['quantity_booked']?.toString() ?? '0'; // Adjust key as per your data structure
+      return [productName, quantity]; // Return product name and quantity as a list
+    }).toList();
+
+    // Calculate total orders
+    int totalOrders = productTableData.length;
+
+    // Generate the PDF with pagination
+    int itemsPerPage = 20; // Maximum number of items per page
+    int pageCount = (totalOrders / itemsPerPage).ceil(); // Calculate total pages
+
+    for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+      // Create a new page for each set of items
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            // Get items for the current page
+            int startIndex = pageIndex * itemsPerPage;
+            int endIndex = startIndex + itemsPerPage;
+            List<List<String>> currentPageData = productTableData.sublist(
+              startIndex,
+              endIndex > totalOrders ? totalOrders : endIndex,
+            );
+
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Main Title
+                pw.Center(
+                  child: pw.Text(
+                    'Valor Trading Products Details - Page ${pageIndex + 1}',
+                    style: pw.TextStyle(
+                      fontSize: 20,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.black,
+                    ),
+                  ),
+                ),
+                pw.SizedBox(height: 10),
+
+                // Booker Information
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    borderRadius: pw.BorderRadius.circular(4),
+                    color: PdfColors.grey300, // Light grey background for better readability
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('Booker ID: $userId', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Booker Name: $userNames', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Print Date: $currentDate', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Orders/Products Date: $ordersDate', style: pw.TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                ),
+
+                pw.SizedBox(height: 20), // Space between header and table
+
+                // Data Table with Product Names and Quantities
+                pw.Text(
+                  'Product Details:',
+                  style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(height: 10),
+
+                // Create a table from filtered product data
+                pw.Table.fromTextArray(
+                  headers: ['Product Name', 'Quantity'], // Headers for product details
+                  data: currentPageData.isNotEmpty
+                      ? currentPageData // Use filtered data for the current page
+                      : [['No Products Found', '0']], // Show message if no products found
+                  headerStyle: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 12,
+                    color: PdfColors.white,
+                  ),
+                  headerDecoration: pw.BoxDecoration(
+                    color: PdfColors.black, // Black background for header row
+                  ),
+                  cellStyle: pw.TextStyle(fontSize: 10),
+                  cellAlignment: pw.Alignment.centerLeft,
+                  oddRowDecoration: pw.BoxDecoration(
+                    color: PdfColors.grey200, // Shading for odd rows
+                  ),
+                  border: pw.TableBorder(
+                    horizontalInside: pw.BorderSide(width: 0.5, color: PdfColors.grey), // Horizontal lines between rows
+                    bottom: pw.BorderSide(width: 0.5, color: PdfColors.black),
+                  ),
+                  cellPadding: pw.EdgeInsets.all(6),
+                ),
+
+                // Total Orders Section
+                pw.SizedBox(height: 20), // Space before totals
+                pw.Divider(), // Divider line
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    borderRadius: pw.BorderRadius.circular(4),
+                    color: PdfColors.grey300, // Light grey background for better readability
+                  ),
+                  child: pw.Text('Total Orders: $totalOrders', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    }
+
+    final tempDir = await getTemporaryDirectory();
+    final pdfFile = File("${tempDir.path}/product_order_details.pdf");
+
+    await pdfFile.writeAsBytes(await pdf.save());
+
+    await Share.shareFiles([pdfFile.path], text: 'Product Order Details');
+  }
+
+
+
+
+
 
 
   @override
@@ -646,66 +887,79 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
 
                       ),
 
-                      ElevatedButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text('Select Date Range'),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextFormField(
-                                      controller: startDateController,
-                                      onTap: () async {
-                                        await _selectDate(
-                                            context, startDateController);
-                                      },
-                                      decoration: const InputDecoration(
-                                          labelText: 'Start Date'),
-                                    ),
-                                    TextFormField(
-                                      controller: endDateController,
-                                      onTap: () async {
-                                        await _selectDate(
-                                            context, endDateController);
-                                      },
-                                      decoration: const InputDecoration(
-                                          labelText: 'End Date'),
-                                    ),
-                                  ],
-                                ),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text('Cancel'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      // Fetch and filter data based on selected date range
-                                      List<Map<String,
-                                          dynamic>> filteredData = await fetchOrderBookingStatusDataWithDetails();
-                                      Navigator.of(context)
-                                          .pop(); // Close the dialog
-                                      // Show the filtered data in another dialog with PDF option
-                                    },
-                                    child: const Text('Filter'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: const Text('Generate PDF'),
-                      )
+
 
 
                     ],
 
                   ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // Align buttons in the center
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.all(9.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            sharePdf();
+                            // Add your functionality here
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue, // Customize button color
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            elevation: 8.0,
+                          ),
+                          child: Container(
+                            height: 30.0,
+                            width: 70.0,
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'Orders PDF',
+                              style: TextStyle(fontSize: 11, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.all(9.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if(startDateController.text.isNotEmpty){
+                            // Add your functionality here
+                            shareProductPdf();
+                            }else {
+                              Fluttertoast.showToast(
+                                msg: "Please Select the Date!!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green, // Customize button color
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            elevation: 8.0,
+                          ),
+                          child: Container(
+                            height: 30.0,
+                            width: 70.0,
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'Products PDF',
+                              style: TextStyle(fontSize: 11, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
                   const SizedBox(height: 20),
                   Card(
                     elevation: 0.0,
@@ -734,6 +988,8 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
                                     } else if (snapshot.hasError) {
                                       return Text('Error: ${snapshot.error}');
                                     } else {
+                                      // Store the generated DataRows in the variable
+                                      dataRows = snapshot.data ?? [];
                                       return DataTable(
                                         columns: const [
                                           DataColumn(label: Text('Order No')),
@@ -743,7 +999,7 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
                                           DataColumn(label: Text('Status')),
                                           DataColumn(label: Text('Details')),
                                         ],
-                                        rows: snapshot.data!,
+                                        rows:dataRows,
                                       );
                                     }
                                   },
@@ -787,190 +1043,4 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
 
     );
   }
-
-
-  // Future<void> _showDateFilterDialog(BuildContext context) async {
-  //   DateTime? selectedStartDate;
-  //   DateTime? selectedEndDate;
-  //   List<Map<String, dynamic>> filteredOrders = [];
-  //
-  //   await showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return StatefulBuilder(
-  //         builder: (BuildContext context, StateSetter setState) {
-  //           return AlertDialog(
-  //             title: const Text('Select Date Range'),
-  //             content: Column(
-  //               mainAxisSize: MainAxisSize.min,
-  //               children: [
-  //                 // Start Date Picker
-  //                 TextFormField(
-  //                   decoration: const InputDecoration(labelText: 'Start Date'),
-  //                   onTap: () async {
-  //                     DateTime? picked = await showDatePicker(
-  //                       context: context,
-  //                       initialDate: DateTime.now(),
-  //                       firstDate: DateTime(2020),
-  //                       lastDate: DateTime(2100),
-  //                     );
-  //                     if (picked != null) {
-  //                       setState(() {
-  //                         selectedStartDate = picked;
-  //                       });
-  //                     }
-  //                   },
-  //                   readOnly: true,
-  //                   controller: TextEditingController(
-  //                     text: selectedStartDate != null
-  //                         ? DateFormat('dd-MMM-yyyy').format(selectedStartDate!)
-  //                         : '',
-  //                   ),
-  //                 ),
-  //                 // End Date Picker
-  //                 TextFormField(
-  //                   decoration: const InputDecoration(labelText: 'End Date'),
-  //                   onTap: () async {
-  //                     DateTime? picked = await showDatePicker(
-  //                       context: context,
-  //                       initialDate: DateTime.now(),
-  //                       firstDate: DateTime(2020),
-  //                       lastDate: DateTime(2100),
-  //                     );
-  //                     if (picked != null) {
-  //                       setState(() {
-  //                         selectedEndDate = picked;
-  //                       });
-  //                     }
-  //                   },
-  //                   readOnly: true,
-  //                   controller: TextEditingController(
-  //                     text: selectedEndDate != null
-  //                         ? DateFormat('dd-MMM-yyyy').format(selectedEndDate!)
-  //                         : '',
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //             actions: <Widget>[
-  //               TextButton(
-  //                 child: const Text('Cancel'),
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                 },
-  //               ),
-  //               TextButton(
-  //                 child: const Text('Fetch Orders'),
-  //                 onPressed: () async {
-  //                   // Fetch orders within selected date range
-  //                   filteredOrders = await _fetchOrdersByDateRange(
-  //                     selectedStartDate,
-  //                     selectedEndDate,
-  //                   );
-  //                   Navigator.of(context).pop(); // Close dialog after fetching
-  //                   // Show order details and PDF generation option
-  //                   await _showOrderDetailsDialog(context, filteredOrders);
-  //                 },
-  //               ),
-  //             ],
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
-  Future<List<Map<String, dynamic>>> _fetchOrdersByDateRange(
-      DateTime? startDate, DateTime? endDate) async {
-    if (startDate == null || endDate == null) return [];
-
-    List<Map<String, dynamic>> orders = await fetchOrderBookingStatusData();
-    // Filter orders by date range
-    return orders.where((order) {
-      DateTime orderDate = DateFormat('dd-MMM-yyyy').parse(order['order_date']);
-      return orderDate.isAfter(startDate.subtract(const Duration(days: 1))) &&
-          orderDate.isBefore(endDate.add(const Duration(days: 1)));
-    }).toList();
-  }
-
-  // Future<void> _showOrderDetailsDialog(BuildContext context, List<Map<String, dynamic>> orders) async {
-  //   await showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Order Details'),
-  //         content: SizedBox(
-  //           width: double.maxFinite,
-  //           child: ListView.builder(
-  //             shrinkWrap: true,
-  //             itemCount: orders.length,
-  //             itemBuilder: (BuildContext context, int index) {
-  //               final order = orders[index];
-  //               return ListTile(
-  //                 title: Text('Order No: ${order['order_no']}'),
-  //                 subtitle: Text('Product: ${order['product_name']}, Quantity: ${order['quantity_booked']}'),
-  //               );
-  //             },
-  //           ),
-  //         ),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: const Text('Generate PDF'),
-  //             onPressed: () {
-  //               generatePDF(orders); // Call PDF generation method
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //           TextButton(
-  //             child: const Text('Close'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
-
-
-
-  Future<Uint8List> generatePDF(List<Map<String, dynamic>> data) async {
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) {
-          return pw.Column(
-            children: [
-              pw.Text('Order Summary'),
-              pw.SizedBox(height: 20),
-              pw.Table.fromTextArray(
-                context: context,
-                headers: ['Order No', 'Product', 'Quantity'],
-                data: data.map((row) {
-                  List<String> productDetails = (row['products'] as List<
-                      dynamic>)
-                      .map((
-                      product) => '${product['product_name']} (${product['quantity_booked']})')
-                      .toList();
-
-                  return [
-                    row['order_no'].toString(),
-                    productDetails.join(', '),
-                    // Display all products as comma-separated values
-                    // You can add more columns as needed
-                  ];
-                }).toList(),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-
-    return pdf.save();
-  }
-
-
 }

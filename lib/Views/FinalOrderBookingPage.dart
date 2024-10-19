@@ -255,7 +255,7 @@ class FinalOrderBookingPageState extends State<FinalOrderBookingPage> {
 
     _ShopNameController.text = shopName!;
     _ownerNameController.text = ownerName!;
-    _brandNameController.text = userBrand;
+    _brandNameController.text = globalselectedbrand;
     _phoneNoController.text = ownerContact!;
 
     return PopScope(

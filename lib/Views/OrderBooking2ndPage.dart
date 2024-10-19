@@ -55,7 +55,11 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
     super.initState();
     onCreatee();
   }
-
+  String _getFormattedDate() {
+    final now = DateTime.now();
+    final formatter = DateFormat('dd-MMM-yyyy');
+    return formatter.format(now);
+  }
 
   Future<void> onCreatee() async {
     DatabaseOutputs db = DatabaseOutputs();
@@ -373,6 +377,7 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
         price: rowData['rate'],
         amount:  rowData['totalAmount'],
         userId: userId,
+        details_date: _getFormattedDate()
         // Populate other fields based on your data model
       ));
     }
