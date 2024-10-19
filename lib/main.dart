@@ -206,6 +206,7 @@ Future<void> initializeServiceLocation() async {
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
       autoStart: false,
+      autoStartOnBoot: false,
       isForegroundMode: true,
       notificationChannelId: 'my_foreground',
       initialNotificationTitle: 'AWESOME SERVICE',
