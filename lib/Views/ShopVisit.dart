@@ -2,7 +2,7 @@ import 'dart:convert' show base64Decode;
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/animation.dart' show AlwaysStoppedAnimation, Color;
 import 'package:flutter/foundation.dart' show Key, Uint8List, kDebugMode;
-import 'package:flutter/material.dart' show Align, Alignment, AppBar, Axis, BorderRadius, BorderSide, BoxDecoration, BoxFit, BuildContext, Card, Center, Checkbox, CircularProgressIndicator, Colors, Column, Container, CrossAxisAlignment, DataCell, DataColumn, DataRow, DataTable, EdgeInsets, ElevatedButton, Expanded, FocusNode, FocusScope, Form, FormState, GestureDetector, GlobalKey, Icon, Icons, Image, InputBorder, InputDecoration, Key, ListTile, MainAxisAlignment, MaterialPageRoute, MediaQuery, Navigator, OutlineInputBorder, Padding, RoundedRectangleBorder, RouteSettings, Row, Scaffold, ScaffoldMessenger, SingleChildScrollView, SizedBox, SnackBar, Stack, State, StatefulWidget, Text, TextEditingController, TextField, TextFormField, TextInputType, TextStyle, ValueListenableBuilder, ValueNotifier, Widget, imageCache;
+import 'package:flutter/material.dart' show Align, Alignment, AppBar, Axis, BorderRadius, BorderSide, BoxDecoration, BoxFit, BuildContext, Card, Center, Checkbox, CircularProgressIndicator, Colors, Column, Container, CrossAxisAlignment, DataCell, DataColumn, DataRow, DataTable, EdgeInsets, ElevatedButton, Expanded, FocusNode, FocusScope, Form, FormState, GestureDetector, GlobalKey, Icon, Icons, Image, InputBorder, InputDecoration, Key, ListTile, MainAxisAlignment, MaterialPageRoute, MediaQuery, Navigator, OutlineInputBorder, Padding, RepaintBoundary, RoundedRectangleBorder, RouteSettings, Row, Scaffold, ScaffoldMessenger, SingleChildScrollView, SizedBox, SnackBar, Stack, State, StatefulWidget, Text, TextEditingController, TextField, TextFormField, TextInputType, TextStyle, ValueListenableBuilder, ValueNotifier, Widget, imageCache;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
@@ -561,10 +561,13 @@ class ShopVisitState extends State<ShopVisit> {
   @override
   void dispose() {
     _shopImageController.clearShopImageFile();
+    BrandNameController.clear();
+    BrandNameController.dispose();
     ShopNameController.dispose(); // Clear the text in the shop name field
     _shopNameFocusNode.dispose(); // Dispose the FocusNode
     feedbackController.dispose();
     feedbackFocusNode.dispose();
+    _brandDropDownController.text ="";
     super.dispose();
   }
   @override
@@ -573,7 +576,7 @@ class ShopVisitState extends State<ShopVisit> {
 
       ShopNameController.text= selectedItem;
       BookerNameController.text= userNames;
-      BrandNameController.text= userBrand;
+       BrandNameController.text= selectedBrand;
 
       return ProviderScope(
 
@@ -612,10 +615,12 @@ class ShopVisitState extends State<ShopVisit> {
                       children: [
                         Expanded(
                           child: SizedBox(
+
                             height: 30,
                             child: DropdownSearch<String>(
+
                               items: brandDropdownItems,
-                              selectedItem: globalselectedbrand,
+                              selectedItem: selectedBrand,
                               dropdownDecoratorProps: DropDownDecoratorProps(
                                 dropdownSearchDecoration: InputDecoration(
                                   hintText: '-------Select Brand------',
@@ -631,8 +636,9 @@ class ShopVisitState extends State<ShopVisit> {
                               onChanged: (String? newValue) async {
                                 if (newValue != null && brandDropdownItems.contains(newValue)) {
                                   setState(() {
-                                    _brandDropDownController.text = newValue;
-                                    globalselectedbrand = newValue;
+                                    selectedBrand = newValue;
+                                    _brandDropDownController.text = selectedBrand;
+                                    globalselectedbrand =_brandDropDownController.text;
                                   });
 
                                   print('userBrand $globalselectedbrand');
@@ -872,17 +878,21 @@ class ShopVisitState extends State<ShopVisit> {
                                             ),
                                           ),
                                           // Wrap the DataTable with Obx
-                                          Obx(() => SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: DataTable(
-                                              columns: const [
-                                                DataColumn(label: Text('Product')),
-                                                DataColumn(label: Text('Quantity')),
-                                              ],
-                                              rows: filteredRows.isNotEmpty ? filteredRows : productsController.rows,
-                                            ),
-                                          )),
-                                        ],
+                                    RepaintBoundary(
+                                      child: ValueListenableBuilder<List<DataRow>>(
+                                        valueListenable: productsController.rowsNotifier,
+                                        builder: (context, rows, child) {
+                                          return DataTable(
+                                            columns: const [
+                                              DataColumn(label: Text('Product')),
+                                              DataColumn(label: Text('Quantity')),
+                                            ],
+                                            rows: filteredRows.isNotEmpty ? filteredRows : rows,
+                                          );
+                                        },
+                                      ),
+                                    )
+                                    ],
                                       ),
                                     ),
                                   ),
@@ -1156,11 +1166,11 @@ class ShopVisitState extends State<ShopVisit> {
                               await stockcheckitemsViewModel.postStockCheckItems();
                             }
 
-                            Map<String, dynamic> dataToPass = {
+                            Map<String, String> dataToPass = {
                               'shopName': ShopNameController.text,
                               'ownerName': selectedShopOwner.toString(),
                               'userName': BookerNameController.text,
-                              'ownerContact': selectedOwnerContact.toString() ?? 'No Contact',
+                              'ownerContact': selectedOwnerContact.toString(),
                             };
 
                             Navigator.push(
@@ -1449,8 +1459,14 @@ class StockCheckItem {
 
 class Products extends GetxController {
   final productsViewModel = ProductsViewModel();
-  RxList<DataRow> rows = <DataRow>[].obs;
+  List<DataRow> rows = <DataRow>[].obs;
   List<TextEditingController> controllers = [];
+  ValueNotifier<List<DataRow>> rowsNotifier = ValueNotifier<List<DataRow>>([]);
+
+  // Method to update rowsNotifier with new rows
+  void updateRows(List<DataRow> newRows) {
+    rowsNotifier.value = newRows;
+  }
 
   Future<void> fetchProducts() async {
     await productsViewModel.fetchProductsByBrand(globalselectedbrand);
@@ -1492,14 +1508,15 @@ class Products extends GetxController {
             }
           },
           onChanged: (value) {
-            // Yaha par 0 ki value ko remove karenge agar kuch type ho
             if (value == '0') {
               controller.clear();
             }
           },
         )),
       ]));
-
     }
+
+    // Update rowsNotifier with the new rows
+    updateRows(List<DataRow>.from(rows));
   }
 }
