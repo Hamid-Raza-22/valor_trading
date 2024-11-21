@@ -13,7 +13,7 @@ class ReturnFormDetailsRepository {
 
   Future<List<ReturnFormDetailsModel>> getReturnFormDetails() async {
     var dbClient = await dbHelperReturnFormDetails.db;
-    List<Map> maps = await dbClient!.query('return_form_details', columns: ['id','returnformId', 'productName', 'quantity','bookerId', 'reason']);
+    List<Map> maps = await dbClient!.query('return_form_details', columns: ['id','returnFormId', 'productName', 'quantity','bookerId', 'reason']);
     List<ReturnFormDetailsModel> returnformdetails = [];
     for (int i = 0; i < maps.length; i++) {
 
@@ -38,7 +38,7 @@ class ReturnFormDetailsRepository {
 
           ReturnFormDetailsModel v = ReturnFormDetailsModel(
             id: i['id'].toString(),
-            returnformId: i['returnFormId'].toString(),
+            returnFormId: i['returnFormId'].toString(),
             productName: i['productName'].toString(),
             reason: i['reason'].toString(),
             quantity: i['quantity'].toString(),

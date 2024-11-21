@@ -1,4 +1,6 @@
+
 import 'dart:io' show InternetAddress, SocketException;
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -351,101 +353,93 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
           ),
           const SizedBox(height: 10), // Add spacing between date and shop name row
           // Shop Name Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.black45,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                    color: Colors.white10,
-                  ),
-                  child: TypeAheadField<String>(
 
-                    suggestionsCallback: (pattern) async {
-                      return dropdownItems
-                          .where((option) =>
-                          option.toLowerCase().contains(pattern.toLowerCase()))
-                          .toList();
-                    },
 
-                    itemBuilder: (context, suggestion) {
-                      return ListTile(
-                        title: Text(
-                          suggestion,
-                          style: const TextStyle(fontSize: 11),
-                          // Adjust maxLines and overflow properties to allow multiline text
-                          maxLines: 2, // Set the maximum number of lines
-                          overflow: TextOverflow.ellipsis, // Handle overflow by showing ellipsis
-                        ),
-                      );
-                    },
-
-                    onSuggestionSelected: (suggestion) async {
+    Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Container(
+            height: 50,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.black45,
+                width: 1.0,
+              ),
+              borderRadius: BorderRadius.circular(8.0),
+              color: Colors.white10,
+            ),
+            child: DropdownSearch<String>(
+              items: dropdownItems, // List of shop names
+              selectedItem: _selectedShopController.text.isEmpty
+                  ? null
+                  : _selectedShopController.text, // Display selected shop
+              onChanged: (String? value) async {
+                if (value != null) {
+                  setState(() {
+                    _selectedShopController.text = value;
+                    selectedorderno = getOrderNoForSelectedShop();
+                    fetchProductDataForSelectedShop(value);
+                    printOrderNoForSelectedShop();
+                  });
+                  for (var owner in shopOwners) {
+                    if (owner['shop_name'] == value) {
                       setState(() {
-                        _selectedShopController.text = suggestion;
-                        selectedorderno = getOrderNoForSelectedShop();
-                        if (kDebugMode) {
-                          print('order no: $selectedorderno');
-                        }
-                        fetchProductDataForSelectedShop(suggestion);
-                        printOrderNoForSelectedShop();
-                        // fetchNetBalanceForShop(suggestion);
+                        selectedShopBrand = owner['brand'];
+                        selectedShopCityR = owner['city'];
                       });
-                      for (var owner in shopOwners) {
-                        if (owner['shop_name'] == suggestion) {
-                          setState(() {
-                            selectedShopBrand = owner['brand'];
-                            selectedShopCityR= owner['city'];
-                            if (kDebugMode) {
-                              print(selectedShopCityR);
-                            }
-                          });
-                        }
-                      }
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('selectedShopName', suggestion);
-                      newDatabaseOutputs outputs = newDatabaseOutputs();
-                      await outputs.updateBalanceData();
-                      setState(() {
-                        String balance = prefs.getString('balance') ?? 'no data';
-                        // Update the current balance field with the calculated net balance
-                        recoveryFormCurrentBalance = double.parse(balance);
-                          globalnetBalance  = recoveryFormCurrentBalance;
-                      });
-                    },
-                    textFieldConfiguration: TextFieldConfiguration(
-                      controller: _selectedShopController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: '--Select Shop--',
-                        floatingLabelBehavior: FloatingLabelBehavior.never,
-                        filled: true,
-                        fillColor: Colors.white10,
-                        contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 3.0), // Adjust vertical padding
-                      ),
-                      style: const TextStyle(fontSize: 15),
-                      onTap: () async {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.remove('balance');
-                        if (kDebugMode) {
-                          print ("Removed Balance");
-                        }
-                      },
-                    ),
+                    }
+                  }
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('selectedShopName', value);
+                  newDatabaseOutputs outputs = newDatabaseOutputs();
+                  await outputs.updateBalanceData();
+                  setState(() {
+                    String balance = prefs.getString('balance') ?? 'no data';
+                    recoveryFormCurrentBalance = double.parse(balance);
+                    globalnetBalance = recoveryFormCurrentBalance;
+                  });
+                }
+              },
+              popupProps: PopupProps.menu(
+                showSelectedItems: true,
+                showSearchBox: true, // Ensures the search box is visible
+                searchFieldProps: TextFieldProps(
+                  decoration: InputDecoration(
+                    labelText: 'Search Shop',
+                    border: OutlineInputBorder(),
                   ),
                 ),
+                itemBuilder: (context, item, isSelected) {
+                  return ListTile(
+                    title: Text(
+                      item,
+                      style: const TextStyle(fontSize: 11),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                },
               ),
-              const SizedBox(width: 25),
-            ],
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: '--Select Shop--',
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  filled: true,
+                  fillColor: Colors.white10,
+                  contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 3.0),
+                ),
+              ),
+            ),
           ),
+        ),
+        const SizedBox(width: 25),
+      ],
+    ),
 
-        ],
+
+    ],
       ),
     );
   }
@@ -484,37 +478,37 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
                     borderRadius: BorderRadius.circular(8.0),
                     color: Colors.white,
                   ),
-                  child: TypeAheadField<String>(
-                    suggestionsCallback: (pattern) async {
-                      List<String> suggestions = dropdownItems2
-                          .where((option) =>
-                          option.toLowerCase().contains(pattern.toLowerCase()))
-                          .toList();
+                  child:
 
-                      for (int i = 0; i <
-                          firstTypeAheadControllers.length; i++) {
-                        String selectedProduct =
-                        firstTypeAheadControllers[i].text.toLowerCase();
-                        suggestions.removeWhere(
-                                (option) =>
-                            option.toLowerCase() == selectedProduct);
-                      }
-
-                      return suggestions;
-                    },
-                    itemBuilder: (context, suggestion) {
+                DropdownSearch<String>(
+                items: dropdownItems2, // List of all available options
+                  popupProps: PopupProps.menu(
+                    showSelectedItems: true,
+                    showSearchBox: true, // Enable the search box
+                    searchFieldProps: TextFieldProps(
+                      decoration: InputDecoration(
+                        // labelText: 'Search Product',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                      ),
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    itemBuilder: (context, item, isSelected) {
                       return ListTile(
                         title: Text(
-                          suggestion,
+                          item,
                           style: const TextStyle(fontSize: 12),
                         ),
                       );
                     },
-                    onSuggestionSelected: (suggestion) async {
+                  ),
+                  selectedItem: firstController.text.isNotEmpty ? firstController.text : null, // Preselect the item if already selected
+                  onChanged: (String? suggestion) async {
+                    if (suggestion != null) {
                       if (kDebugMode) {
                         print(suggestion);
                       }
-                      SellectedproductName= suggestion;
+                      SellectedproductName = suggestion;
                       setState(() {
                         firstController.text = suggestion;
                         firstController.isSelectionFromSuggestion = true;
@@ -526,19 +520,18 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
                       await updatePriceField(suggestion, index);
                       calculateTotalAmount();
                       await netbalance();
-                    },
-                    textFieldConfiguration: TextFieldConfiguration(
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding:
-                        EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-                      ),
-                      controller: firstController,
-                      style: const TextStyle(fontSize: 12),
-                      maxLines: null,
+                    }
+                  },
+                  dropdownDecoratorProps: DropDownDecoratorProps(
+                    dropdownSearchDecoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      // labelText: 'Select Product',
+                      contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
                     ),
                   ),
                 ),
+
+              ),
               ),
               const SizedBox(width: 5),
               SizedBox(
@@ -587,40 +580,52 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
                   borderRadius: BorderRadius.circular(5.0),
                   color: Colors.white,
                 ),
-                child: TypeAheadField<String>(
-                  suggestionsCallback: (pattern) async {
-                    return ['Damage', 'Complaint', 'Expire', 'closed', 'Others']
-                        .where((option) =>
-                        option.toLowerCase().contains(pattern.toLowerCase()))
-                        .toList();
-                  },
-                  itemBuilder: (context, suggestion) {
-                    return ListTile(
-                      title: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          suggestion,
-                          style: const TextStyle(fontSize: 10),
-                        ),
-                      ),
-                    );
-                  },
-                  onSuggestionSelected: (suggestion) {
-                    setState(() {
-                      secondController.text = suggestion;
-                    });
-                  },
-                  textFieldConfiguration: TextFieldConfiguration(
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding:
-                      EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+                child:
+
+                DropdownSearch<String>(
+                  items: ['Damage', 'Complaint', 'Expire', 'Closed', 'Others'], // Options
+                  popupProps: PopupProps.menu(
+                    // showSearchBox: true, // Enables search functionality
+                    // searchFieldProps: TextFieldProps(
+                    //   decoration: InputDecoration(
+                    //     labelText: 'Search', // Placeholder for the search field
+                    //     border: OutlineInputBorder(),
+                    //     contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                    //   ),
+                    //   style: TextStyle(fontSize: 10), // Smaller text size for search field
+                    // ),
+                    menuProps: MenuProps(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    controller: secondController,
-                    style: const TextStyle(fontSize: 12),
-                    maxLines: null,
+                    itemBuilder: (context, item, isSelected) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                        child: Text(
+                          item,
+                          style: const TextStyle(fontSize: 16), // Smaller text size for dropdown items
+                        ),
+                      );
+                    },
                   ),
-                ),
+                  dropdownDecoratorProps: DropDownDecoratorProps(
+                    baseStyle: const TextStyle(fontSize: 10), // Smaller text size for the selected item
+                    dropdownSearchDecoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                     // labelText: 'Select an Option', // Label for the dropdown
+                      contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                    ),
+                  ),
+                  selectedItem: secondController.text.isNotEmpty ? secondController.text : null,
+                  onChanged: (String? selectedItem) {
+                    if (selectedItem != null) {
+                      setState(() {
+                        secondController.text = selectedItem;
+                      });
+                    }
+                  },
+                )
+
+                ,
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red, size: 17),
@@ -756,7 +761,7 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
              returnformdetailsViewModel.addReturnFormDetail(
               ReturnFormDetailsModel(
                 id: int.parse(id),
-                returnformId: returnformid ?? 0,
+                returnFormId: returnformid ?? 0,
                 productName: firstTypeAheadControllers[i].text,
                 reason: secondTypeAheadControllers[i].text,
                 quantity: qtyControllers[i].text,

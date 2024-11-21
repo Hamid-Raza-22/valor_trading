@@ -1,5 +1,6 @@
 import 'dart:io' show File;
 
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter, FontWeight, LengthLimitingTextInputFormatter, Size, TextEditingValue, TextInputFormatter, TextInputType, TextSelection;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -539,65 +540,74 @@ bool isOrderConfirmedback = false;
                                       borderRadius: BorderRadius.circular(5.0),
                                     ),
                                   ),
-                                ) else TypeAheadFormField(
-                                  textFieldConfiguration: TextFieldConfiguration(
-                                    controller: cityController,
-                                    focusNode: cityFocusNode,
-                                    decoration: InputDecoration(
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                      labelText: 'Enter City',
-                                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(5.0),
-                                      ),
-                                      errorBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.red),
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please select a valid city';
-                                    } else {
-                                      return null; // Return null if validation passes
-                                    }
-                                  },
-                                  suggestionsCallback: (pattern) {
-                                    return citiesDropdownItems.where((city) => city.toLowerCase().contains(pattern.toLowerCase())).toList();
-                                  },
-                                  itemBuilder: (context, suggestion) {
-                                    return ListTile(
-                                      title: Text(suggestion),
-                                    );
-                                  },
-                                  onSuggestionSelected: (suggestion) {
-                                    if (citiesDropdownItems.contains(suggestion)) {
-                                      setState(() {
-                                        cityController.text = suggestion;
-                                      });
-                                    } else {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: const Text('Invalid City'),
-                                            content: const Text('Please select a city from the provided list.'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: const Text('OK'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    }
-                                  },
-                                ),
-                              ],
+                                ) else
+            DropdownSearch<String>(
+            items: citiesDropdownItems, // List of city options
+            popupProps: PopupProps.menu(
+              showSearchBox: true, // Enable search functionality
+              searchFieldProps: TextFieldProps(
+                decoration: InputDecoration(
+                  hintText: 'Search City', // Placeholder text
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                ),
+                style: TextStyle(fontSize: 14),
+              ),
+              menuProps: MenuProps(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            dropdownDecoratorProps: DropDownDecoratorProps(
+              dropdownSearchDecoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                labelText: 'Enter City',
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.red),
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+              ),
+            ),
+            selectedItem: cityController.text.isNotEmpty ? cityController.text : null,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please select a valid city';
+              }
+              return null; // Return null if validation passes
+            },
+            onChanged: (String? suggestion) {
+              if (suggestion != null && citiesDropdownItems.contains(suggestion)) {
+                setState(() {
+                  cityController.text = suggestion;
+                });
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Invalid City'),
+                      content: const Text('Please select a city from the provided list.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+          )
+
+       ],
                             ),
                             const SizedBox(height: 10),
                             // Text Field 2 - Shop Address

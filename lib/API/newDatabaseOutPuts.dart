@@ -1198,7 +1198,7 @@ class newDatabaseOutputs {
       List<dynamic>? productsdata;
       try {
         productsdata = await api.getupdateData(
-            "$refProductsApi/$formattedDateTime");
+            "$refProductsApi$formattedDateTime");
 
       } catch (e) {
         if (kDebugMode) {
@@ -1317,6 +1317,7 @@ class newDatabaseOutputs {
   Future<void> updateCitiesData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? formattedDateTime = prefs.getString('lastInitializationDateTime');
+    print(formattedDateTime);
     // String? id = prefs.getString('userId');
     if (formattedDateTime != null) {
       final db = DBHelper();

@@ -112,6 +112,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
   double? globalLongitude1;
   DBHelper dbHelper = DBHelper();
   bool isLoadingReturn= false;
+  bool isLoadingReturn3= false;
   final loc.Location location = loc.Location();
   bool isLoading = false; // Define isLoading variable
 
@@ -1098,7 +1099,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                             child:ElevatedButton(
                               onPressed: () async {
                                 setState(() {
-                                  isLoadingReturn = true; // assuming isLoading is a boolean state variable
+                                  isLoadingReturn3 = true; // assuming isLoading is a boolean state variable
                                 });
 
                                 // Delay for 5 seconds
@@ -1187,8 +1188,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                                           ),
                                           ElevatedButton(
                                             onPressed: () async {
-                                              String allowance = allowanceController
-                                                  .text;
+                                              String allowance = allowanceController.text;
                                               String fuel = fuelController.text;
 
                                               // API call
@@ -1211,11 +1211,15 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
 
                                               if (response.statusCode == 200) {
                                                 // If the server returns a 200 OK response
-                                                print(
+                                                if (kDebugMode) {
+                                                  print(
                                                     'Data posted successfully');
+                                                }
                                               } else {
                                                 // If the server did not return a 200 OK response
-                                                print('Failed to post data');
+                                                if (kDebugMode) {
+                                                  print('Failed to post data');
+                                                }
                                               }
 
                                               Navigator.pop(context);
@@ -1235,7 +1239,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                                 }
 
                                 setState(() {
-                                  isLoadingReturn = false; // set loading state to false after execution
+                                  isLoadingReturn3 = false; // set loading state to false after execution
                                 });
                               },
                               style: ElevatedButton.styleFrom(
@@ -1245,7 +1249,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: isLoadingReturn
+                              child: isLoadingReturn3
                                   ? const CircularProgressIndicator() // Show a loading indicator
                                   : const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

@@ -663,7 +663,7 @@ class ShopVisitState extends State<ShopVisit> {
               GestureDetector(
                 onTap: () async {
                   // await _checkUserIdAndFetchShopNames();
-                  _shopImageController.clearShopImageFile();
+                //  _shopImageController.clearShopImageFile();
                   ShopNameController.clear();
                 },
                 child: SizedBox(
@@ -1057,8 +1057,18 @@ class ShopVisitState extends State<ShopVisit> {
                             await Future.delayed(const Duration(milliseconds: 100));
 
                             setState(() {
-                              isButtonPressed = true;
+                              isButtonPressed = false;
                             });
+                            print("Brand:${_brandDropDownController.text}");
+                            print("ShopName:${ShopNameController.text}");
+                            print("Brand:${ShopAddressController.text}");
+                            print("Brand:${ShopOwnerController.text}");
+                            print("Brand:${BookerNameController.text}");
+                            print("Brand:${_imageFile!.path}");
+                            print('Number of rows: ${productsController.rows.length}');
+                           // print('Row $i cells count: ${row.cells.length}');
+
+
 
                             if (!checkboxValue1 ||
                                 !checkboxValue2 ||
@@ -1082,7 +1092,7 @@ class ShopVisitState extends State<ShopVisit> {
                               return;
                             }
 
-                            if (_imageFile == null || ShopNameController.text.isEmpty|| _brandDropDownController.text.isEmpty) {
+                            if (_imageFile == null || ShopNameController.text.isEmpty|| selectedBrand == null || selectedItem == null ||BrandNameController.text.isEmpty) {
                               Fluttertoast.showToast(
                                 msg: 'Please fulfill all requirements before proceeding.',
                                 toastLength: Toast.LENGTH_SHORT,
@@ -1133,10 +1143,16 @@ class ShopVisitState extends State<ShopVisit> {
 
                             for (int i = 0; i < productsController.rows.length; i++) {
                               DataRow row = productsController.rows[i];
-                              String itemDesc = row.cells[0].child.toString();
-                              String qty = productsController.controllers[i].text; // Get the value from the controller
 
-                              if (int.parse(qty) != 0) {
+                              if (row.cells.isEmpty || productsController.controllers.length <= i) {
+                                print('Skipping row $i due to empty cells or mismatched controller.');
+                                continue;
+                              }
+
+                              String itemDesc = row.cells[0].child.toString();
+                              String qty = productsController.controllers[i].text;
+
+                              if (qty.isNotEmpty && int.parse(qty) != 0) {
                                 stockCheckItemsList.add(
                                   StockCheckItemsModel(
                                     shopvisitId: shopVisitId,
@@ -1251,7 +1267,7 @@ class ShopVisitState extends State<ShopVisit> {
                               return;
                             }
 
-                            if (_imageFile == null || ShopNameController.text.isEmpty) {
+                            if (_imageFile == null || ShopNameController.text.isEmpty|| BrandNameController.text.isEmpty) {
                               Fluttertoast.showToast(
                                 msg: 'Please fulfill all requirements before proceeding.',
                                 toastLength: Toast.LENGTH_SHORT,
@@ -1300,13 +1316,20 @@ class ShopVisitState extends State<ShopVisit> {
                             List<StockCheckItemsModel> stockCheckItemsList = [];
                             SharedPreferences prefs = await SharedPreferences.getInstance();
 
-                            for (int i = 0; i < (productsController.rows).length; i++) {
-                              DataRow row = (productsController.rows)[i];
-                              String itemDesc = row.cells[0].child.toString();
-                              String qty = productsController.controllers[i].text; // Get the value from the controller
+                            for (int i = 0; i < productsController.rows.length; i++) {
+                              DataRow row = productsController.rows[i];
 
-                              // Only add the item if qty is not null or empty
-                              if (int.parse(qty) != 0) {
+                              if (row.cells.isEmpty || productsController.controllers.length <= i) {
+                                if (kDebugMode) {
+                                  print('Skipping row $i due to empty cells or mismatched controller.');
+                                }
+                                continue;
+                              }
+
+                              String itemDesc = row.cells[0].child.toString();
+                              String qty = productsController.controllers[i].text;
+
+                              if (qty.isNotEmpty && int.parse(qty) != 0) {
                                 stockCheckItemsList.add(
                                   StockCheckItemsModel(
                                     shopvisitId: shopVisitId,
@@ -1315,16 +1338,16 @@ class ShopVisitState extends State<ShopVisit> {
                                   ),
                                 );
 
-                                // Store itemDesc and qty into SharedPreferences
                                 await prefs.setString('itemDesc$i', itemDesc);
                                 await prefs.setString('qty$i', qty);
-                                // Print itemDesc and qty
+
                                 if (kDebugMode) {
                                   print('itemDesc$i: $itemDesc');
                                   print('qty$i: $qty');
                                 }
                               }
                             }
+
 
                             // Call the method to add stock check items to the database
                             for (var stockCheckItems in stockCheckItemsList) {
