@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import '../Models/RecoveryFormModel.dart';
+import '../../Models/RecoveryFormModel.dart';
 
 import '../Repositories/RecoveryFormRepository.dart';
 

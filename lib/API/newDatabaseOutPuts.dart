@@ -1610,5 +1610,12 @@ class newDatabaseOutputs {
     await updateCitiesData();
     await updateBalanceData();
   }
+  Future<void> refreshHeadsData() async{
+
+    await updateOwnerData();
+    await updateloginData();
+    await updateCitiesData();
+
+  }
 
 }

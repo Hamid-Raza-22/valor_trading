@@ -370,7 +370,7 @@ class ShopVisitState extends State<ShopVisit> {
         Placemark currentPlace = placemarks[0];
 
         String address1 = "${currentPlace.thoroughfare} ${currentPlace.subLocality}, ${currentPlace.locality}${currentPlace.postalCode}, ${currentPlace.country}";
-        address = address1;
+        shopAddress = address1;
 
         if (kDebugMode) {
           print('Address is: $address1');
@@ -1129,7 +1129,7 @@ class ShopVisitState extends State<ShopVisit> {
                               planogram: checkboxValue2,
                               signage: checkboxValue3,
                               productReviewed: checkboxValue4,
-                              address: address,
+                              address: shopAddress,
                               body: imageBytes,
                               longitude: longitude,
                               latitude: latitude,
@@ -1304,7 +1304,7 @@ class ShopVisitState extends State<ShopVisit> {
                               planogram: checkboxValue2,
                               signage: checkboxValue3,
                               productReviewed: checkboxValue4,
-                              address: address,
+                              address: shopAddress,
                               body: imageBytes,
                               latitude: latitude,
                               longitude: longitude,

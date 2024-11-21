@@ -1,12 +1,11 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:metaxperts_valor_trading_dynamic_apis/post_apis/Post_apis.dart';
-import '../../API/Globals.dart';
-import '../../Models/OrderModels/OrderMasterModel.dart';
-
 
 import '../../API/ApiServices.dart';
+import '../../API/Globals.dart';
 import '../../Databases/DBHelper.dart';
+import '../../Models/OrderModels/OrderMasterModel.dart';
 
 class OrderMasterRepository{
 
@@ -63,8 +62,8 @@ class OrderMasterRepository{
 
           try {
             final results = await Future.wait([
-              api.masterPost(v.toMap(), orderMasterApi),
-              // api.masterPost(v.toMap(), '$Alt_IP_Address/ordermaster/post/'),
+             // api.masterPost(v.toMap(), orderMasterApi),
+               api.masterPost(v.toMap(), 'http://103.149.32.30:4000/api/order-masters'),
             ]);
 
             if (results[0] == true) {

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../Models/HeadsShopVistModels.dart';
 import '../Models/ShopVisitModels.dart';
 import '../Repositories/ShopVisitRepository.dart';
 
@@ -23,6 +24,10 @@ class ShopVisitViewModel extends GetxController{
     shopvisitRepository.add(shopvisitModel);
     fetchAllShopVisit();
   }
+  addHeadsShopVisit(HeadsShopVisitModel headsshopvisitModel){
+    shopvisitRepository.addHeasdsShopVisits(headsshopvisitModel);
+    fetchAllShopVisit();
+  }
 
   Future<String> fetchLastShopVisitId() async{
     String shopvisit = await shopvisitRepository.getLastid();
@@ -40,6 +45,10 @@ class ShopVisitViewModel extends GetxController{
   }
   postShopVisit(){
     shopvisitRepository.postShopVisitData();
+
+  }
+ postHeadsShopVisit(){
+    shopvisitRepository.postHeadsShopVisitData();
 
   }
 

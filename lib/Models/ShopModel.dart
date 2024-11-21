@@ -14,7 +14,8 @@ class ShopModel {
   dynamic latitude;
   dynamic longitude;
   dynamic userId;
-  dynamic? address;
+  dynamic address;
+  dynamic brand;
   // Uint8List? body;
 
   ShopModel({
@@ -31,7 +32,8 @@ class ShopModel {
     this.address,
     // this.body,
      this.longitude,
-    this.userId
+    this.userId,
+    this.brand
   });
 
   factory ShopModel.fromMap(Map<dynamic, dynamic> json) {
@@ -50,6 +52,7 @@ class ShopModel {
       longitude: json['longitude'],
         userId: json['userId'],
       address: json['address'],
+      brand: json['brand'],
       // body: json['body'] != null && json['body'].toString().isNotEmpty
       //     ? Uint8List.fromList(base64Decode(json['body'].toString()))
       //     : null,
@@ -70,7 +73,8 @@ class ShopModel {
       'latitude':latitude,
       'longitude':longitude,
       'userId': userId,
-      'address': address
+      'address': address,
+      'brand': brand
       // 'body':  body != null ? base64Encode(body!) : null
     };
   }
