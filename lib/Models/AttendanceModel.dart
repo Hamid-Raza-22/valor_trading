@@ -1,13 +1,14 @@
 class AttendanceModel {
-  dynamic? id;
+  dynamic id;
   String? date;
   String? timeIn;
   String? userId;
-  dynamic? latIn;
-  dynamic? lngIn;
- dynamic? bookerName;
- dynamic? designation;
- dynamic? city;
+  dynamic latIn;
+  dynamic lngIn;
+ dynamic bookerName;
+ dynamic designation;
+ dynamic city;
+ dynamic address;
 
 
   AttendanceModel({
@@ -19,8 +20,8 @@ class AttendanceModel {
     this.lngIn,
     this.bookerName,
     this.city,
-    this.designation
-
+    this.designation,
+    this.address
   });
 
   factory AttendanceModel.fromMap(Map<dynamic, dynamic> json) {
@@ -35,6 +36,7 @@ class AttendanceModel {
       bookerName: json['bookerName'],
         city: json['city'],
         designation: json['designation'],
+        address: json['address'],
 
 
     );
@@ -50,7 +52,8 @@ class AttendanceModel {
       'lngIn': lngIn,
       'bookerName': bookerName,
       'city':city,
-      'designation':designation
+      'designation':designation,
+      'address':address
 
     };
   }
@@ -58,14 +61,15 @@ class AttendanceModel {
 
 
 class AttendanceOutModel {
-  dynamic? id;
+  dynamic id;
   String? date;
   String? timeOut;
   String? userId;
-  dynamic? totalTime;
-  dynamic? latOut;
-  dynamic? lngOut;
-  dynamic? totalDistance;
+  dynamic totalTime;
+  dynamic latOut;
+  dynamic lngOut;
+  dynamic totalDistance;
+  dynamic address;
 
 
   AttendanceOutModel({
@@ -76,7 +80,8 @@ class AttendanceOutModel {
     this.totalTime,
     this.latOut,
     this.lngOut,
-    this.totalDistance
+    this.totalDistance,
+    this.address
   });
 
   factory AttendanceOutModel.fromMap(Map<dynamic, dynamic> json) {
@@ -89,7 +94,8 @@ class AttendanceOutModel {
       totalTime: json['totalTime'],
       latOut: json['latOut'],
       lngOut:json['lngOut'],
-      totalDistance: json['totalDistance']
+      totalDistance: json['totalDistance'],
+      address: json['address']
 
     );
   }
@@ -103,7 +109,8 @@ class AttendanceOutModel {
       'totalTime':totalTime,
       'latOut': latOut,
       'lngOut':lngOut,
-      'totalDistance': totalDistance
+      'totalDistance': totalDistance,
+      'address': address
     };
   }
 }

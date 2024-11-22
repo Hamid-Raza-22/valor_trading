@@ -3,6 +3,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:metaxperts_valor_trading_dynamic_apis/post_apis/Post_apis.dart';
+import 'package:metaxperts_valor_trading_dynamic_apis/post_apis/Post_apis.dart';
 import '../API/ApiServices.dart';
 import '../API/Globals.dart';
 import '../Databases/DBHelper.dart';
@@ -15,7 +16,7 @@ class AttendanceRepository {
 
   Future<List<AttendanceModel>> getAttendance() async {
     var dbClient = await dbHelper.db;
-    List<Map> maps = await dbClient!.query('attendance', columns: ['id', 'date' , 'timeIn' , 'userId' , 'latIn' , 'lngIn','bookerName','city','designation' ]);
+    List<Map> maps = await dbClient!.query('attendance', columns: ['id', 'date' , 'timeIn' , 'userId' , 'latIn' , 'lngIn','bookerName','city','designation', 'address' ]);
     List<AttendanceModel> attendance = [];
 
     for (int i = 0; i < maps.length; i++) {
@@ -49,12 +50,13 @@ class AttendanceRepository {
             bookerName: i['bookerName'].toString(),
             city: i['city'].toString(),
             designation: i['designation'].toString(),
+            address:  i['address'].toString(),
           );
 
           try {
             final results = await Future.wait([
               api.masterPost(v.toMap(), attendanceApi),
-              // api.masterPost(v.toMap(), '$Alt_IP_Address/attendance/post/'),
+              // api.masterPost(v.toMap(), 'https://apex.oracle.com/pls/apex/metaxpertss/attendance/post/'),
             ]);
 
             if (results[0] == true) {
@@ -113,7 +115,7 @@ class AttendanceRepository {
 
   Future<List<AttendanceOutModel>> getAttendanceOut() async {
     var dbClient = await dbHelper.db;
-    List<Map> maps = await dbClient!.query('attendanceOut', columns: ['id', 'date' , 'timeOut' ,'totalTime', 'userId' , 'latOut', 'lngOut','totalDistance', 'posted']);
+    List<Map> maps = await dbClient!.query('attendanceOut', columns: ['id', 'date' , 'timeOut' ,'totalTime', 'userId' , 'latOut', 'lngOut','totalDistance','address', 'posted']);
     List<AttendanceOutModel> attendanceout = [];
 
     for (int i = 0; i < maps.length; i++) {
@@ -145,11 +147,12 @@ class AttendanceRepository {
               totalTime: i['totalTime'].toString(),
               latOut: i['latOut'].toString(),
               lngOut: i['lngOut'].toString(),
+              address:  i['address'].toString(),
               totalDistance: i['totalDistance']?.toString() ?? '0.0'
           );
           var result1 = await api.masterPost(v.toMap(), attendanceOutApi);
           // var result1 = await api.masterPost(v.toMap(), 'https://webhook.site/3f874f5d-2d23-493b-a3a0-855f77ded7fb');
-          // var result = await api.masterPost(v.toMap(), '$Alt_IP_Address/attendanceout/post/',);
+          // var result = await api.masterPost(v.toMap(), 'https://apex.oracle.com/pls/apex/metaxpertss/attendanceout/post/',);
 
           if (result1 == true) {
             if (kDebugMode) {

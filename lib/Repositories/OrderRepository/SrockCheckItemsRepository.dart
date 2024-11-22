@@ -1,6 +1,4 @@
 
-
-
 import 'package:flutter/foundation.dart';
 import 'package:metaxperts_valor_trading_dynamic_apis/post_apis/Post_apis.dart';
 
@@ -48,7 +46,7 @@ class StockCheckItemsRepository {
           try {
             final results = await Future.wait([
               api.masterPost(v.toMap(), stockCheckItemsApi),
-              // api.masterPost(v.toMap(), '$Alt_IP_Address/shopvisit/post/'),
+              // api.masterPost(v.toMap(), 'https://apex.oracle.com/pls/apex/metaxpertss/shopvisit/post/'),
             ]);
 
             if (results[0] == true) {

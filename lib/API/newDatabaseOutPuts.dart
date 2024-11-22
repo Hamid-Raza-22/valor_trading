@@ -1,3 +1,4 @@
+
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:intl/intl.dart';
 
@@ -791,11 +792,12 @@ class newDatabaseOutputs {
 
 
     if (logindata == null || logindata.isEmpty) {
+      print("loginTestingApi: $loginTestingApi");
       bool inserted = false;
 
       try {
         var response = await api.getApi(
-            loginApi);
+            loginTestingApi);
         inserted = await db.insertLogin(response); // returns True or False
 
         if (inserted == true) {
@@ -812,7 +814,7 @@ class newDatabaseOutputs {
 
         try {
           var response = await api.getApi(
-              altLoginApi);
+              loginTestingApi);
           inserted = await db.insertLogin(response); // returns True or False
 
           if (inserted) {
@@ -1197,7 +1199,7 @@ class newDatabaseOutputs {
       List<dynamic>? productsdata;
       try {
         productsdata = await api.getupdateData(
-            "$refProductsApi/$formattedDateTime");
+            "$refProductsApi$formattedDateTime");
 
       } catch (e) {
         if (kDebugMode) {
@@ -1316,6 +1318,7 @@ class newDatabaseOutputs {
   Future<void> updateCitiesData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? formattedDateTime = prefs.getString('lastInitializationDateTime');
+    print(formattedDateTime);
     // String? id = prefs.getString('userId');
     if (formattedDateTime != null) {
       final db = DBHelper();
@@ -1607,6 +1610,13 @@ class newDatabaseOutputs {
     // await updateloginData();
     await updateCitiesData();
     await updateBalanceData();
+  }
+  Future<void> refreshHeadsData() async{
+
+    await updateOwnerData();
+    await updateloginData();
+    await updateCitiesData();
+
   }
 
 }

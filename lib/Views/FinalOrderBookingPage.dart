@@ -28,7 +28,7 @@ class Productss extends ChangeNotifier {
   List<DataRow> rows = [];
   List<TextEditingController> quantityControllers = [];
   final amounts = <ProductsModel, RxDouble>{};
-  final Map<String, String> args = Get.arguments ?? {};
+  final Map<String, dynamic> args = Get.arguments ?? {};
   String total = '0';
   List<RxDouble> amountValues = [];
   final ValueNotifier<double> _totalValueNotifier = ValueNotifier<double>(0.0);

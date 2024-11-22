@@ -1,4 +1,5 @@
 import 'dart:io' show InternetAddress, SocketException;
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -386,78 +387,71 @@ class _RecoveryFromPageState extends State<RecoveryFromPage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          TypeAheadFormField(
-                            textFieldConfiguration: TextFieldConfiguration(
-                              controller: TextEditingController(text: selectedDropdownValue),
+                        DropdownSearch<String>(
+                          items: dropdownItems1, // List of items
+                          popupProps: PopupProps.menu(
+                            showSearchBox: true, // Enables search functionality
+                            searchFieldProps: TextFieldProps(
                               decoration: InputDecoration(
-                                hintText: '--Select Shop--',
+                                hintText: 'Search Shop',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(5.0),
                                 ),
+                                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                               ),
-                              onTap: () async {
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
-                                await prefs.remove('balance');
-                                if (kDebugMode) {
-                                  print ("Removed Balance");
-                                }
-
-                                // Clear the current balance controller when the field is tapped
-                                _currentBalanceController.clear();
-
-                              },
+                              style: TextStyle(fontSize: 14),
                             ),
-                            suggestionsCallback: (pattern) {
-                              return dropdownItems1
-                                  .where((item) =>
-                                  item.toLowerCase().contains(pattern.toLowerCase()))
-                                  .toList();
-                            },
-                            itemBuilder: (context, suggestion) {
-                              return ListTile(
-                                title: Text(suggestion),
-                              );
-                            },
-                            onSuggestionSelected: (suggestion) async {
+                            menuProps: MenuProps(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          dropdownDecoratorProps: DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              hintText: '--Select Shop--',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                            ),
+                          ),
+                          selectedItem: selectedDropdownValue,
+                          onChanged: (String? suggestion) async {
+                            if (suggestion != null) {
                               setState(() {
                                 selectedDropdownValue = suggestion;
                                 selectedShopName = suggestion;
-                                // Fetch and display the net balance for the selected shop
-                                // fetchNetBalanceForShop(selectedDropdownValue!);
-                                fetchAccountsData();
                               });
+
+                              // Fetch account data and update other details
+                              await fetchAccountsData();
+
                               for (var owner in shopOwners) {
                                 if (owner['shop_name'] == selectedShopName) {
                                   setState(() {
                                     selectedShopBrand = owner['brand'];
-                                    selectedShopCityR= owner['city'];
-                                    if (kDebugMode) {
-                                      print(selectedShopCityR);
-                                    }
+                                    selectedShopCityR = owner['city'];
                                   });
                                 }
-                              }  // Save the selected shop name in SharedPreferences
+                              }
+
+                              // Save the selected shop name in SharedPreferences
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               await prefs.setString('selectedShopName', selectedShopName!);
+
+                              // Update the balance
                               newDatabaseOutputs outputs = newDatabaseOutputs();
                               await outputs.updateBalanceData();
-                              // await Future.delayed(const Duration(seconds: 3));
 
-                              // SetState() {
-                              //   _currentBalanceController.text =
-                              //       prefs.getString('balance') ?? 'no data';
-                              // }
                               setState(() {
                                 String balance = prefs.getString('balance') ?? 'no data';
-                                // Update the current balance field with the calculated net balance
                                 recoveryFormCurrentBalance = double.parse(balance);
-                                // globalnetBalance = netBalance;
                                 _currentBalanceController.text = recoveryFormCurrentBalance.toString();
                               });
+                            }
+                          },
+                        ),
 
-                            },
-                          ),
-                          const SizedBox(height: 10),
+                        const SizedBox(height: 10),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [

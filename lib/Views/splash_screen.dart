@@ -48,7 +48,11 @@ class _SplashScreenState extends State<SplashScreen> {
     String? userId = prefs.getString('userId');
     String? userNames = prefs.getString('userNames');
     String? userCitys = prefs.getString('userCitys');
-    return userId != null && userId.isNotEmpty && userCitys!=null && userCitys.isNotEmpty && userNames!=null && userNames.isNotEmpty;
+    String? userDesignation = prefs.getString('userDesignation');
+    String? userRSM = prefs.getString('userRSM');
+    String? userSM = prefs.getString('userSM');
+    String? userNSM = prefs.getString('userNSM');
+    return userRSM != null && userRSM.isNotEmpty && userSM != null && userSM.isNotEmpty && userNSM != null && userNSM.isNotEmpty &&userId != null && userId.isNotEmpty && userCitys!=null && userCitys.isNotEmpty && userNames!=null && userNames.isNotEmpty && userDesignation!=null && userDesignation.isNotEmpty;
   }
 
   @override
