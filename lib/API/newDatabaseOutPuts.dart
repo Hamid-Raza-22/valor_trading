@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:intl/intl.dart';
 
@@ -1318,7 +1317,6 @@ class newDatabaseOutputs {
   Future<void> updateCitiesData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? formattedDateTime = prefs.getString('lastInitializationDateTime');
-    print(formattedDateTime);
     // String? id = prefs.getString('userId');
     if (formattedDateTime != null) {
       final db = DBHelper();
