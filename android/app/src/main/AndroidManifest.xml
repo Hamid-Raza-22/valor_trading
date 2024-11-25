@@ -15,9 +15,10 @@
     <application
         android:label="Valor Trading"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
         <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAaT85zIkurgEogtTw5IFdMXVr_hYG2Al8"/>
+            android:value="AIzaSyCBiQHUTm6cf6IMbt-9Z-BqRRqVTp62PPA"/>
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -31,7 +32,7 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
-                 the Android process has started. This theme is visible to the user
+                 the Android process has started.   //android:value="AIzaSyAaT85zIkurgEogtTw5IFdMXVr_hYG2Al8"/>  This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
                  to determine the Window background behind the Flutter UI. -->
             <meta-data

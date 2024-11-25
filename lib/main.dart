@@ -78,7 +78,7 @@ Future<void> main() async {
   // // Enable background execution
   // await FlutterBackground.enableBackgroundExecution();
   newDatabaseOutputs outputs = newDatabaseOutputs();
-  outputs.initializeLoginData();
+  await outputs.initializeLoginData();
 
   // Request notification permissions
   // await _requestPermissions();
@@ -198,11 +198,11 @@ void callbackDispatcher(){
     return Future.value(true);
   });
 }
-// Future<void> deleteDatabaseFile() async {
-//   io.Directory documentDirectory = await getApplicationDocumentsDirectory();
-//   String path = join(documentDirectory.path, 'shop.db');
-//   await deleteDatabase(path);
-// }
+Future<void> deleteDatabaseFile() async {
+  io.Directory documentDirectory = await getApplicationDocumentsDirectory();
+  String path = join(documentDirectory.path, 'valorTrading.db');
+  await deleteDatabase(path);
+}
 Future<void> initializeServiceLocation() async {
   final service = FlutterBackgroundService();
 

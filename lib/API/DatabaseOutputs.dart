@@ -444,84 +444,84 @@ class DatabaseOutputs{
     // var username = 'yxeRFdCC0wjh1BYjXu1HFw..';
     // var password = 'KG-oKSMmf4DhqtFNmVtpMw..';
 
-    if (Logindata == null || Logindata.isEmpty) {
-      bool inserted = false;
+    // if (Logindata == null || Logindata.isEmpty) {
+    //   bool inserted = false;
+    //
+    //   try {
+    //     var response = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/login/get/");
+    //     inserted = await db.insertLogin(response);  // returns True or False
+    //
+    //     if (inserted == true) {
+    //       if (kDebugMode) {
+    //         print("Login Data inserted successfully using first API.");
+    //       }
+    //     } else {
+    //       throw Exception("Error inserting data using first API.");
+    //     }
+    //   } catch (e) {
+    //     if (kDebugMode) {
+    //       print("Error with first API. Trying second API.");
+    //     }
+    //
+    //     try {
+    //       var response = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/login/get/");
+    //       inserted = await db.insertLogin(response);  // returns True or False
+    //
+    //       if (inserted) {
+    //         if (kDebugMode) {
+    //           print("Login Data inserted successfully using second API.");
+    //         }
+    //       } else {
+    //         if (kDebugMode) {
+    //           print("Error inserting data using second API.");
+    //         }
+    //       }
+    //     } catch (e) {
+    //       if (kDebugMode) {
+    //         print("Error with second API as well. Unable to fetch or insert login data.");
+    //       }
+    //     }
+    //   }
+    // }
 
-      try {
-        var response = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/login/get/");
-        inserted = await db.insertLogin(response);  // returns True or False
 
-        if (inserted == true) {
-          if (kDebugMode) {
-            print("Login Data inserted successfully using first API.");
-          }
-        } else {
-          throw Exception("Error inserting data using first API.");
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error with first API. Trying second API.");
-        }
-
-        try {
-          var response = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/login/get/");
-          inserted = await db.insertLogin(response);  // returns True or False
-
-          if (inserted) {
-            if (kDebugMode) {
-              print("Login Data inserted successfully using second API.");
-            }
-          } else {
-            if (kDebugMode) {
-              print("Error inserting data using second API.");
-            }
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            print("Error with second API as well. Unable to fetch or insert login data.");
-          }
-        }
-      }
-    }
-
-
-    if (Owerdata == null || Owerdata.isEmpty ) {
-      try {
-        // https://apex.oracle.com/pls/apex/metaa/owner/get/
-        //http://103.149.32.30:8080/ords/metaxperts/owner/get/
-        var response = await api.getApi("https://apex.oracle.com/pls/apex/metaa/owner/get/");
-
-        var results = await db.insertOwnerData(response);   //return True or False
-        if (results) {
-          if (kDebugMode) {
-            print("Owner Data inserted successfully using first API..");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error inserting data.");
-          }
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error with first API. Trying second API.");
-        }
-        var response = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/owner/get/");
-        var results = await db.insertOwnerData(response);   //return True or False
-        if (results) {
-          if (kDebugMode) {
-            print("Owner Data inserted successfully using second API..");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error inserting data.");
-          }
-        }
-      }
-    } else {
-      if (kDebugMode) {
-        print("Data is available.");
-      }
-    }
+    // if (Owerdata == null || Owerdata.isEmpty ) {
+    //   try {
+    //     // https://apex.oracle.com/pls/apex/metaa/owner/get/
+    //     //http://103.149.32.30:8080/ords/metaxperts/owner/get/
+    //     var response = await api.getApi("https://apex.oracle.com/pls/apex/metaa/owner/get/");
+    //
+    //     var results = await db.insertOwnerData(response);   //return True or False
+    //     if (results) {
+    //       if (kDebugMode) {
+    //         print("Owner Data inserted successfully using first API..");
+    //       }
+    //     } else {
+    //       if (kDebugMode) {
+    //         print("Error inserting data.");
+    //       }
+    //     }
+    //   } catch (e) {
+    //     if (kDebugMode) {
+    //       print("Error with first API. Trying second API.");
+    //     }
+    //     var response = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/owner/get/");
+    //     var results = await db.insertOwnerData(response);   //return True or False
+    //     if (results) {
+    //       if (kDebugMode) {
+    //         print("Owner Data inserted successfully using second API..");
+    //       }
+    //     } else {
+    //       if (kDebugMode) {
+    //         print("Error inserting data.");
+    //       }
+    //     }
+    //   }
+    // } else {
+    //   if (kDebugMode) {
+    //     print("Data is available.");
+    //   }
+    // }
 
 
     // if (Accountsdata == null || Accountsdata.isEmpty ) {
@@ -548,169 +548,169 @@ class DatabaseOutputs{
     // } else {
     //   print("Data is available.");
     // }
-
-    if (OrderBookingStatusdata == null || OrderBookingStatusdata.isEmpty ) {
-      try {
-        var response = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/statusget/get/");
-        var results = await db.insertOrderBookingStatusData1(response);   //return True or False
-        if (results) {
-          if (kDebugMode) {
-            print("OrderBookingStatus Data inserted successfully using first API.");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error inserting data.");
-          }
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error with first API. Trying second API.");
-        }
-        var response = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/statusget/get/");
-        var results = await db.insertOrderBookingStatusData1(response);   //return True or False
-        if (results) {
-          if (kDebugMode) {
-            print("OrderBookingStatus Data inserted successfully using second API..");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error inserting data.");
-          }
-        }
-      }
-    }
-
-
-    if (RecoveryFormGetData == null || RecoveryFormGetData.isEmpty ) {
-      try {
-        var response = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/recovery/get/");
-
-        var results1 = await db.insertRecoveryFormData1(response);   //return True or False
-        if (results1) {
-          if (kDebugMode) {
-            print("RecoveryFormGetData Data inserted successfully using first API.");
-          }
-        } else {
-          throw Exception('Insertion failed with first API');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error with first API. Trying second API.");
-        }
-        var response= await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/recovery/get/");
-
-        var results2 = await db.insertRecoveryFormData1(response);   //return True or False
-        if (results2) {
-          if (kDebugMode) {
-            print("RecoveryFormGetData Data inserted successfully using second API.");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error inserting data with both APIs.");
-          }
-        }
-      }
-    }
-
-    if (OrderMasterdata == null || OrderMasterdata.isEmpty ) {
-      try {
-        var response1 = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/masterget/get/");
-
-        var results1 = await db.insertOrderMasterData1(response1);   //return True or False
-        if (results1) {
-          if (kDebugMode) {
-            print("OrderMaster Data inserted successfully using first API.");
-          }
-        } else {
-          throw Exception('Insertion failed with first API');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error with first API. Trying second API.");
-        }
-        var response2 = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/masterget/get/");
-        var results2 = await db.insertOrderMasterData1(response2);   //return True or False
-        if (results2) {
-          if (kDebugMode) {
-            print("OrderMaster Data inserted successfully using second API.");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error inserting data with both APIs.");
-          }
-        }
-      }
-    }
+    //
+    // if (OrderBookingStatusdata == null || OrderBookingStatusdata.isEmpty ) {
+    //   try {
+    //     var response = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/statusget/get/");
+    //     var results = await db.insertOrderBookingStatusData1(response);   //return True or False
+    //     if (results) {
+    //       if (kDebugMode) {
+    //         print("OrderBookingStatus Data inserted successfully using first API.");
+    //       }
+    //     } else {
+    //       if (kDebugMode) {
+    //         print("Error inserting data.");
+    //       }
+    //     }
+    //   } catch (e) {
+    //     if (kDebugMode) {
+    //       print("Error with first API. Trying second API.");
+    //     }
+    //     var response = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/statusget/get/");
+    //     var results = await db.insertOrderBookingStatusData1(response);   //return True or False
+    //     if (results) {
+    //       if (kDebugMode) {
+    //         print("OrderBookingStatus Data inserted successfully using second API..");
+    //       }
+    //     } else {
+    //       if (kDebugMode) {
+    //         print("Error inserting data.");
+    //       }
+    //     }
+    //   }
+    // }
 
 
-    if (OrderDetailsdata == null || OrderDetailsdata.isEmpty ) {
-      try {
-        var response1 = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/detailget/get/");
-        var results1 = await db.insertOrderDetailsData1(response1);   //return True or False
-        if (results1) {
-          if (kDebugMode) {
-            print("OrderDetails Data inserted successfully using first API.");
-          }
-        } else {
-          throw Exception('Insertion failed with first API');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error with first API. Trying second API.");
-        }
-        var response2 = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/detailget/get/");
-        var results2 = await db.insertOrderDetailsData1(response2);   //return True or False
-        if (results2) {
-          if (kDebugMode) {
-            print("OrderDetails Data inserted successfully using second API.");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error inserting data with both APIs.");
-          }
-        }
-      }
-    } else {
-      if (kDebugMode) {
-        print("Data is available.");
-      }
-    }
-
-
-    if (Productdata == null || Productdata.isEmpty ) {
-      try {
-        var response1 = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/product/get/");
-
-        var results1 = await db.insertProductsData(response1);   //return True or False
-        if (results1) {
-          if (kDebugMode) {
-            print("Products Data inserted successfully using first API.");
-          }
-        } else {
-          throw Exception('Insertion failed with first API');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error with first API. Trying second API.");
-        }
-        var response2 = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/product/get/");
-
-        var results2 = await db.insertProductsData(response2);   //return True or False
-        if (results2) {
-          if (kDebugMode) {
-            print("Products Data inserted successfully using second API.");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error inserting data with both APIs.");
-          }
-        }
-      }
-    } else {
-      if (kDebugMode) {
-        print("Data is available.");
-      }
-    }
+    // if (RecoveryFormGetData == null || RecoveryFormGetData.isEmpty ) {
+    //   try {
+    //     var response = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/recovery/get/");
+    //
+    //     var results1 = await db.insertRecoveryFormData1(response);   //return True or False
+    //     if (results1) {
+    //       if (kDebugMode) {
+    //         print("RecoveryFormGetData Data inserted successfully using first API.");
+    //       }
+    //     } else {
+    //       throw Exception('Insertion failed with first API');
+    //     }
+    //   } catch (e) {
+    //     if (kDebugMode) {
+    //       print("Error with first API. Trying second API.");
+    //     }
+    //     var response= await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/recovery/get/");
+    //
+    //     var results2 = await db.insertRecoveryFormData1(response);   //return True or False
+    //     if (results2) {
+    //       if (kDebugMode) {
+    //         print("RecoveryFormGetData Data inserted successfully using second API.");
+    //       }
+    //     } else {
+    //       if (kDebugMode) {
+    //         print("Error inserting data with both APIs.");
+    //       }
+    //     }
+    //   }
+    // }
+    //
+    // if (OrderMasterdata == null || OrderMasterdata.isEmpty ) {
+    //   try {
+    //     var response1 = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/masterget/get/");
+    //
+    //     var results1 = await db.insertOrderMasterData1(response1);   //return True or False
+    //     if (results1) {
+    //       if (kDebugMode) {
+    //         print("OrderMaster Data inserted successfully using first API.");
+    //       }
+    //     } else {
+    //       throw Exception('Insertion failed with first API');
+    //     }
+    //   } catch (e) {
+    //     if (kDebugMode) {
+    //       print("Error with first API. Trying second API.");
+    //     }
+    //     var response2 = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/masterget/get/");
+    //     var results2 = await db.insertOrderMasterData1(response2);   //return True or False
+    //     if (results2) {
+    //       if (kDebugMode) {
+    //         print("OrderMaster Data inserted successfully using second API.");
+    //       }
+    //     } else {
+    //       if (kDebugMode) {
+    //         print("Error inserting data with both APIs.");
+    //       }
+    //     }
+    //   }
+    // }
+    //
+    //
+    // if (OrderDetailsdata == null || OrderDetailsdata.isEmpty ) {
+    //   try {
+    //     var response1 = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/detailget/get/");
+    //     var results1 = await db.insertOrderDetailsData1(response1);   //return True or False
+    //     if (results1) {
+    //       if (kDebugMode) {
+    //         print("OrderDetails Data inserted successfully using first API.");
+    //       }
+    //     } else {
+    //       throw Exception('Insertion failed with first API');
+    //     }
+    //   } catch (e) {
+    //     if (kDebugMode) {
+    //       print("Error with first API. Trying second API.");
+    //     }
+    //     var response2 = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/detailget/get/");
+    //     var results2 = await db.insertOrderDetailsData1(response2);   //return True or False
+    //     if (results2) {
+    //       if (kDebugMode) {
+    //         print("OrderDetails Data inserted successfully using second API.");
+    //       }
+    //     } else {
+    //       if (kDebugMode) {
+    //         print("Error inserting data with both APIs.");
+    //       }
+    //     }
+    //   }
+    // } else {
+    //   if (kDebugMode) {
+    //     print("Data is available.");
+    //   }
+    // }
+    //
+    //
+    // if (Productdata == null || Productdata.isEmpty ) {
+    //   try {
+    //     var response1 = await api.getApi("http://103.149.32.30:8080/ords/metaxperts/product/get/");
+    //
+    //     var results1 = await db.insertProductsData(response1);   //return True or False
+    //     if (results1) {
+    //       if (kDebugMode) {
+    //         print("Products Data inserted successfully using first API.");
+    //       }
+    //     } else {
+    //       throw Exception('Insertion failed with first API');
+    //     }
+    //   } catch (e) {
+    //     if (kDebugMode) {
+    //       print("Error with first API. Trying second API.");
+    //     }
+    //     var response2 = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/product/get/");
+    //
+    //     var results2 = await db.insertProductsData(response2);   //return True or False
+    //     if (results2) {
+    //       if (kDebugMode) {
+    //         print("Products Data inserted successfully using second API.");
+    //       }
+    //     } else {
+    //       if (kDebugMode) {
+    //         print("Error inserting data with both APIs.");
+    //       }
+    //     }
+    //   }
+    // } else {
+    //   if (kDebugMode) {
+    //     print("Data is available.");
+    //   }
+    // }
 
     // if (Distributordata == null || Distributordata.isEmpty ) {
     //   var response2 = await api.getApi("https://g77e7c85ff59092-db17lrv.adb.ap-singapore-1.oraclecloudapps.com/ords/metaxperts/distributorlist/get/");
