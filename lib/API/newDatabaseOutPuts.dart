@@ -787,15 +787,16 @@ class newDatabaseOutputs {
   Future<void> initializeLoginData() async {
     final api = ApiServices();
     final db = DBHelper();
-    var logindata = await db.getAllLogins();
 
 
-    if (logindata == null || logindata.isEmpty) {
+      if (kDebugMode) {
+        print("loginTestingApi: $loginTestingApi");
+      }
       bool inserted = false;
 
       try {
         var response = await api.getApi(
-            loginApi);
+            loginTestingApi);
         inserted = await db.insertLogin(response); // returns True or False
 
         if (inserted == true) {
@@ -812,7 +813,7 @@ class newDatabaseOutputs {
 
         try {
           var response = await api.getApi(
-              altLoginApi);
+              loginTestingApi);
           inserted = await db.insertLogin(response); // returns True or False
 
           if (inserted) {
@@ -831,7 +832,7 @@ class newDatabaseOutputs {
           }
         }
       }
-    }await showLoginGetData();
+    await showLoginGetData();
   }
   // function for the update recovery from the data table
   Future<void> updateRecoveryFormGetData() async {
@@ -1197,7 +1198,7 @@ class newDatabaseOutputs {
       List<dynamic>? productsdata;
       try {
         productsdata = await api.getupdateData(
-            "$refProductsApi/$formattedDateTime");
+            "$refProductsApi$formattedDateTime");
 
       } catch (e) {
         if (kDebugMode) {
@@ -1460,66 +1461,66 @@ class newDatabaseOutputs {
   }
 
 // function for the login table
-  Future<void> updateloginData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? formattedDateTime = prefs.getString('lastInitializationDateTime');
-    // String? id = prefs.getString('userId');
-    if (formattedDateTime != null) {
-      final db = DBHelper();
-      final api = ApiServices();
-      List<dynamic>? login;
-      try {
-        login = await api.getupdateData(
-            "$refLoginApi$formattedDateTime");
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error fetching data from API: $e");
-        }
-        login = await api.getupdateData(
-            "$Alt_IP_Address/logindata/get/$formattedDateTime");
-      }
-      if (login != null && login.isNotEmpty) {
-        bool result = await db.updateloginTable(login);
-        if (result) {
-          if (kDebugMode) {
-            print("Data Updated Successfully for login table");
-          }
-        } else {
-          if (kDebugMode) {
-            print("Error updating login table");
-          }
-        }
-      } else {
-        if (kDebugMode) {
-          print("No data found for update in login table");
-        }
-      }
-    } else {
-      if (kDebugMode) {
-        print('No formatted date and time found in SharedPreferences');
-      }
-    }showlogintable();
-  }
-  Future<void> showlogintable() async {
-    if (kDebugMode) {
-      print("************Tables SHOWING**************");
-    }
-    if (kDebugMode) {
-      print("************login table**************");
-    }
-    final db = DBHelper();
-    var data = await db.getAllLogins();
-    int co = 0;
-    for (var i in data!) {
-      co++;
-      if (kDebugMode) {
-        print("$co | ${i.toString()} \n");
-      }
-    }
-    if (kDebugMode) {
-      print("TOTAL of no of login in table is $co");
-    }
-  }
+//   Future<void> updateloginData() async {
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+//     String? formattedDateTime = prefs.getString('lastInitializationDateTime');
+//     // String? id = prefs.getString('userId');
+//     if (formattedDateTime != null) {
+//       final db = DBHelper();
+//       final api = ApiServices();
+//       List<dynamic>? login;
+//       try {
+//         login = await api.getupdateData(
+//             "$refLoginApi$formattedDateTime");
+//       } catch (e) {
+//         if (kDebugMode) {
+//           print("Error fetching data from API: $e");
+//         }
+//         login = await api.getupdateData(
+//             "$Alt_IP_Address/logindata/get/$formattedDateTime");
+//       }
+//       if (login != null && login.isNotEmpty) {
+//         bool result = await db.updateloginTable(login);
+//         if (result) {
+//           if (kDebugMode) {
+//             print("Data Updated Successfully for login table");
+//           }
+//         } else {
+//           if (kDebugMode) {
+//             print("Error updating login table");
+//           }
+//         }
+//       } else {
+//         if (kDebugMode) {
+//           print("No data found for update in login table");
+//         }
+//       }
+//     } else {
+//       if (kDebugMode) {
+//         print('No formatted date and time found in SharedPreferences');
+//       }
+//     }showlogintable();
+//   }
+//   Future<void> showlogintable() async {
+//     if (kDebugMode) {
+//       print("************Tables SHOWING**************");
+//     }
+//     if (kDebugMode) {
+//       print("************login table**************");
+//     }
+//     final db = DBHelper();
+//     var data = await db.getAllLogins();
+//     int co = 0;
+//     for (var i in data!) {
+//       co++;
+//       if (kDebugMode) {
+//         print("$co | ${i.toString()} \n");
+//       }
+//     }
+//     if (kDebugMode) {
+//       print("TOTAL of no of login in table is $co");
+//     }
+//   }
 
   // function for the accounts data table
   Future<void> updateAccountsData() async {
@@ -1599,7 +1600,7 @@ class newDatabaseOutputs {
     await updateOwnerData();
     await updateOrderMasterData();
     await updateOrderDetailsData();
-    updateProductsData();
+    await updateProductsData();
     await updateProductCategoryData();
     await updateOrderBookingStatusData();
     await updateRecoveryFormGetData();
@@ -1607,6 +1608,13 @@ class newDatabaseOutputs {
     // await updateloginData();
     await updateCitiesData();
     await updateBalanceData();
+  }
+  Future<void> refreshHeadsData() async{
+
+    await updateOwnerData();
+    // await updateloginData();
+    await updateCitiesData();
+
   }
 
 }

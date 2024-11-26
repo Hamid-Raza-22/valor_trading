@@ -1,16 +1,18 @@
-import 'dart:async' show Completer, Future, Timer;
+import 'dart:async' show Completer, Future, StreamSubscription, Timer;
 import 'package:flutter/foundation.dart' show Key, kDebugMode;
 import 'package:flutter/material.dart' show AlertDialog, Align, Alignment, AppBar, Border, BorderRadius, BoxDecoration, BoxShape, BuildContext, Center, CircleBorder, CircularProgressIndicator, Colors, Column, Container, EdgeInsets, ElevatedButton, Icon, IconButton, IconData, Icons, InputDecoration, Key, MainAxisAlignment, MainAxisSize, Material, MaterialApp, MaterialPageRoute, Navigator, OutlineInputBorder, Padding, RoundedRectangleBorder, Row, Scaffold, SingleChildScrollView, SizedBox, State, StatefulWidget, StatelessWidget, Text, TextButton, TextEditingController, TextField, TextStyle, Widget, WidgetsBinding, WidgetsBindingObserver, WidgetsFlutterBinding, WillPopScope, runApp, showDialog;
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart' show FlutterBackgroundService;
-import 'package:geolocator/geolocator.dart' show Geolocator, LocationPermission, Position;
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:location/location.dart' as loc;
 import 'package:fluttertoast/fluttertoast.dart' show Fluttertoast, Toast, ToastGravity;
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:nanoid/nanoid.dart' show customAlphabet;
-import '../API/Globals.dart' show PostingStatus, currentPostId, isClockedIn, locationbool, secondsPassed, timer, userBrand, userCitys, userDesignation, userId, userNames;
+import '../API/Globals.dart' show PostingStatus, checkAndSetInitializationDateTime, currentPostId, isClockedIn, locationbool, secondsPassed, shopAddress, timer, userBrand, userCitys, userDesignation, userId, userNames;
 import '../Models/AttendanceModel.dart';
 import '../main.dart';
 import 'package:path_provider/path_provider.dart';
@@ -39,8 +41,8 @@ import 'ShopVisit.dart';
 import '../Databases/DBHelper.dart';
 import 'dart:io' show File, InternetAddress, SocketException;
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth, User;
-import 'package:location/location.dart' as loc;
-import 'package:permission_handler/permission_handler.dart';
+
+import 'package:permission_handler/permission_handler.dart' show Permission, PermissionActions, PermissionStatus, PermissionStatusGetters, openAppSettings;
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -112,8 +114,10 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
   double? globalLongitude1;
   DBHelper dbHelper = DBHelper();
   bool isLoadingReturn= false;
+  bool isLoadingReturn3= false;
   final loc.Location location = loc.Location();
   bool isLoading = false; // Define isLoading variable
+  late StreamSubscription<ServiceStatus> locationServiceStatusStream;
 
   // }
 
@@ -127,13 +131,15 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-
+    checkAndSetInitializationDateTime();
+    _monitorLocationService();
     // backgroundTask();
     WidgetsBinding.instance.addObserver(this);
     _loadClockStatus();
     fetchShopList();
     _retrieveSavedValues();
     _clockRefresh();
+
     if (kDebugMode) {
       print("B1000 ${name.toString()}");
     }
@@ -155,7 +161,167 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
       await fetchShopNames();
     }
   }
+  void _monitorLocationService() {
+    locationServiceStatusStream = Geolocator.getServiceStatusStream().listen((ServiceStatus status) async {
+      if (status == ServiceStatus.disabled && isClockedIn) {
+        await _handleClockOut();
+      }
+    });
+  }
+  Future<void> saveCurrentLocation(BuildContext context) async {
+    if (!mounted) return; // Check if the widget is still mounted
 
+
+    PermissionStatus permission = await Permission.location.request();
+
+    if (permission.isGranted) {
+      try {
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+        globalLatitude1 = position.latitude;
+        globalLongitude1 = position.longitude;
+
+        if (kDebugMode) {
+          print('Latitude: $globalLatitude1, Longitude: $globalLongitude1');
+        }
+
+        // Default address to "Pakistan" initially
+        String address1 = "Pakistan";
+
+        try {
+          // Attempt to get the address from coordinates
+          List<Placemark> placemarks = await placemarkFromCoordinates(
+              globalLatitude1!, globalLongitude1!);
+          Placemark? currentPlace = placemarks.isNotEmpty ? placemarks[0] : null;
+
+          if (currentPlace != null) {
+            address1 = "${currentPlace.thoroughfare ?? ''} ${currentPlace.subLocality ?? ''}, ${currentPlace.locality ?? ''} ${currentPlace.postalCode ?? ''}, ${currentPlace.country ?? ''}";
+
+            // Check if the constructed address is empty, fallback to "Pakistan"
+            if (address1.trim().isEmpty) {
+              address1 = "Pakistan";
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error getting placemark: $e');
+          }
+          // Keep the address as "Pakistan"
+        }
+
+        shopAddress = address1;
+        // GPS is enabled
+
+        if (kDebugMode) {
+          print('Address is: $address1');
+        }
+
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error getting location: $e');
+        }
+        //  isGpsEnabled = false; // GPS is not enabled
+      }
+    }
+
+
+  }
+
+  Future<void> _handleClockOut() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent users from dismissing the dialog
+      builder: (BuildContext context) {
+        return WillPopScope(
+          onWillPop: () async => false, // Prevent back button from closing the dialog
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+    Completer<void> completer = Completer<void>();
+
+
+    final service = FlutterBackgroundService();
+
+    bool newIsClockedIn = !isClockedIn;
+
+    // Perform clock-out operations here
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    service.invoke("stopService");
+    await saveCurrentLocation(context);
+
+    final date = DateFormat('dd-MM-yyyy').format(DateTime.now());
+    final downloadDirectory = await getDownloadsDirectory();
+    double totalDistance = await calculateTotalDistance("${downloadDirectory?.path}/track$date.gpx");
+    totalDistance ??= 0;
+    await Future.delayed(const Duration(seconds: 4));
+    await attendanceViewModel.addAttendanceOut(AttendanceOutModel(
+        id: prefs.getString('clockInId'),
+        timeOut: _getFormattedtime(),
+        totalTime: _formatDuration(newsecondpassed.toString()),
+        date: _getFormattedDate(),
+        userId: userId.toString(),
+        latOut: globalLatitude1,
+        lngOut: globalLongitude1,
+        totalDistance: totalDistance,
+        address: shopAddress
+    ));
+    isClockedIn = false;
+    _saveClockStatus(false);
+    await Future.delayed(const Duration(seconds: 10));
+
+    await postFile();
+    bool isConnected = await isInternetAvailable();
+
+    if (isConnected) {
+      await attendanceViewModel.postAttendanceOut();
+    }
+
+    _stopTimer();
+    _clockRefresh();
+    await prefs.remove('clockInId');
+    await location.enableBackgroundMode(enable: false);
+
+    setState(() {
+      isClockedIn = newIsClockedIn;
+    });
+
+    // Show the confirmation dialog
+    if (mounted) {
+      await showDialog(
+        context: context,
+        barrierDismissible: false, // Prevent the user from dismissing the dialog
+        builder: (context) => WillPopScope(
+          onWillPop: () async => false, // Prevent back button from closing the dialog
+          child: AlertDialog(
+            title: const Text('Clock Out'),
+            content: const Text('You have been clocked out due to location services being disabled.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => const HomePage()),
+                    );
+                  });
+                },
+
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Navigator.pop(context); // Close the loading indicator dialog
+    completer.complete();
+    return completer.future;
+  }
   Future<void> fetchShopNames() async {
     var box = await Hive.openBox('shopNamesByCities');
     List<String> shopNamesByCities = box.get('shopNamesByCities', defaultValue: <String>[]);
@@ -1098,7 +1264,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                             child:ElevatedButton(
                               onPressed: () async {
                                 setState(() {
-                                  isLoadingReturn = true; // assuming isLoading is a boolean state variable
+                                  isLoadingReturn3 = true; // assuming isLoading is a boolean state variable
                                 });
 
                                 // Delay for 5 seconds
@@ -1187,8 +1353,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                                           ),
                                           ElevatedButton(
                                             onPressed: () async {
-                                              String allowance = allowanceController
-                                                  .text;
+                                              String allowance = allowanceController.text;
                                               String fuel = fuelController.text;
 
                                               // API call
@@ -1211,11 +1376,15 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
 
                                               if (response.statusCode == 200) {
                                                 // If the server returns a 200 OK response
-                                                print(
+                                                if (kDebugMode) {
+                                                  print(
                                                     'Data posted successfully');
+                                                }
                                               } else {
                                                 // If the server did not return a 200 OK response
-                                                print('Failed to post data');
+                                                if (kDebugMode) {
+                                                  print('Failed to post data');
+                                                }
                                               }
 
                                               Navigator.pop(context);
@@ -1235,7 +1404,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                                 }
 
                                 setState(() {
-                                  isLoadingReturn = false; // set loading state to false after execution
+                                  isLoadingReturn3 = false; // set loading state to false after execution
                                 });
                               },
                               style: ElevatedButton.styleFrom(
@@ -1245,7 +1414,7 @@ class _HomePageState extends State<HomePage>with WidgetsBindingObserver {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: isLoadingReturn
+                              child: isLoadingReturn3
                                   ? const CircularProgressIndicator() // Show a loading indicator
                                   : const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

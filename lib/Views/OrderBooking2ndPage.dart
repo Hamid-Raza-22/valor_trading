@@ -377,7 +377,7 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
         price: rowData['rate'],
         amount:  rowData['totalAmount'],
         userId: userId,
-        details_date: _getFormattedDate()
+       // details_date: _getFormattedDate()
         // Populate other fields based on your data model
       ));
     }

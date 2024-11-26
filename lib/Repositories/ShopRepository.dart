@@ -3,13 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:metaxperts_valor_trading_dynamic_apis/post_apis/Post_apis.dart';
-import '../Databases/DBHelper.dart';
-
-import '../Models/ShopModel.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../API/ApiServices.dart';
 import '../API/Globals.dart';
+import '../Databases/DBHelper.dart';
+import '../Models/ShopModel.dart';
 
 
 class ShopRepository {
@@ -18,7 +17,7 @@ class ShopRepository {
 
   Future<List<ShopModel>> getShop() async {
     var dbClient = await dbHelper.db;
-    List<Map> maps = await dbClient!.query('shop', columns: ['id', 'shopName' , 'city' ,'date', 'shopAddress' , 'ownerName' , 'ownerCNIC' , 'phoneNo' , 'alternativePhoneNo', 'latitude', 'longitude','userId','address','posted']);
+    List<Map> maps = await dbClient!.query('shop', columns: ['id', 'shopName' , 'city' ,'date', 'shopAddress' , 'ownerName' , 'ownerCNIC' , 'phoneNo' , 'alternativePhoneNo', 'latitude', 'longitude','userId','address','posted','brand']);
     List<ShopModel> shop = [];
 
     for (int i = 0; i < maps.length; i++) {
@@ -63,6 +62,7 @@ class ShopRepository {
             longitude: i['longitude'].toString(),
             userId: i['userId'].toString(),
             address: i['address'].toString(),
+            brand: i['brand'].toString(),
             // body: i['body'] != null && i['body'].toString().isNotEmpty
             //     ? Uint8List.fromList(base64Decode(i['body'].toString()))
             //     : Uint8List(0),
@@ -97,7 +97,7 @@ class ShopRepository {
             addShopApi,
            // imageBytes,
           );
-          // await api.masterPostWithImage(v.toMap(), '$Alt_IP_Address/addshops/post/', imageBytes,);
+          // await api.masterPostWithImage(v.toMap(), 'https://apex.oracle.com/pls/apex/metaxpertss/addshops/post/', imageBytes,);
 
           if (result1 == true) {
             await dbClient.rawDelete('DELETE FROM shop WHERE id = ?', [i['id']]);

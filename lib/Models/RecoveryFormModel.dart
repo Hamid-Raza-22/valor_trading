@@ -1,6 +1,4 @@
 
-import '../Models/ProductsModel.dart';
-
 class  RecoveryFormModel {
 
   dynamic? recoveryId;

@@ -1,6 +1,6 @@
 class ReturnFormDetailsModel {
   dynamic? id;
-  dynamic? returnformId;
+  dynamic? returnFormId;
   String? productName;
  dynamic? bookerId;
  //dynamic? returnAmount;
@@ -9,7 +9,7 @@ class ReturnFormDetailsModel {
   dynamic? quantity;
   ReturnFormDetailsModel({
     this.id,
-    this.returnformId,
+    this.returnFormId,
     this.productName,
     this.bookerId,
     this.reason,
@@ -21,7 +21,7 @@ class ReturnFormDetailsModel {
   factory ReturnFormDetailsModel.fromMap(Map<dynamic, dynamic> json) {
     return ReturnFormDetailsModel(
       id: json['id'],
-      returnformId: json['returnformId'],
+      returnFormId: json['returnFormId'],
       productName: json['productName'],
       bookerId: json['bookerId'],
       reason: json['reason'],
@@ -33,7 +33,7 @@ class ReturnFormDetailsModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'returnformId':returnformId,
+      'returnFormId':returnFormId,
       'productName': productName,
       'bookerId':bookerId,
       'reason': reason,

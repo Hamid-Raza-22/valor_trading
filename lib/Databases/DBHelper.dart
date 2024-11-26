@@ -29,13 +29,12 @@ class DBHelper {
     String path = join(documentDirectory.path, 'valorTrading.db');
     var db = await openDatabase(
       path,
-      version: 2, // Increment the version number
+      version: 4, // Increment the version number
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
     return db;
   }
-
   void _onCreate(Database db, int version) async {
     try {
       if (kDebugMode) {
@@ -46,7 +45,7 @@ class DBHelper {
       await db.execute("CREATE TABLE ownerData(id NUMBER,shop_name TEXT, owner_name TEXT, phone_no TEXT, city TEXT, shop_address TEXT, created_date TEXT, user_id TEXT, images BLOB)");
       await db.execute("CREATE TABLE products(id NUMBER PRIMARY KEY, product_code TEXT, product_name TEXT, uom TEXT ,price TEXT, brand TEXT, quantity TEXT)");
       await db.execute("CREATE TABLE orderMasterData(order_no TEXT, shop_name TEXT, user_id TEXT)");
-      await db.execute("CREATE TABLE orderDetailsData(id INTEGER,details_date, order_no TEXT, product_name TEXT, quantity_booked INTEGER, user_id TEXT, price INTEGER)");
+      await db.execute("CREATE TABLE orderDetailsData(id INTEGER, order_no TEXT, product_name TEXT, quantity_booked INTEGER, user_id TEXT, price INTEGER)");
       await db.execute("CREATE TABLE productCategory(id INTEGER,brand TEXT)");
       await db.execute("CREATE TABLE recoveryFormGet(recovery_id TEXT, user_id TEXT)");
       await db.execute("CREATE TABLE accounts(account_id INTEGER PRIMARY KEY, shop_name TEXT, order_date TEXT, credit NUMBER, booker_name TEXT, user_id TEXT)");
@@ -54,7 +53,7 @@ class DBHelper {
       await db.execute("CREATE TABLE pakCities(id INTEGER,city TEXT)");
       await db.execute("CREATE TABLE shop(id INTEGER PRIMARY KEY AUTOINCREMENT, shopName TEXT, city TEXT, date TEXT, shopAddress TEXT, ownerName TEXT, ownerCNIC TEXT, phoneNo TEXT, alternativePhoneNo INTEGER, latitude TEXT, longitude TEXT, userId TEXT, posted INTEGER DEFAULT 0, body BLOB)");
       await db.execute("CREATE TABLE orderMaster (orderId TEXT PRIMARY KEY, date TEXT, shopName TEXT, ownerName TEXT, phoneNo TEXT, brand TEXT, userName TEXT, userId TEXT, total INTEGER, creditLimit TEXT, requiredDelivery TEXT, shopCity TEXT, posted INTEGER DEFAULT 0)");
-      await db.execute("CREATE TABLE order_details(id INTEGER PRIMARY KEY AUTOINCREMENT, details_date TEXT, order_master_id TEXT, productName TEXT, quantity INTEGER, price INTEGER, amount INTEGER, userId TEXT, posted INTEGER DEFAULT 0, FOREIGN KEY (order_master_id) REFERENCES orderMaster(orderId))");
+      await db.execute("CREATE TABLE order_details(id INTEGER PRIMARY KEY AUTOINCREMENT, order_master_id TEXT, productName TEXT, quantity INTEGER, price INTEGER, amount INTEGER, userId TEXT, posted INTEGER DEFAULT 0, FOREIGN KEY (order_master_id) REFERENCES orderMaster(orderId))");
       await db.execute("CREATE TABLE attendance(id INTEGER PRIMARY KEY, date TEXT, timeIn TEXT, userId TEXT, latIn TEXT, lngIn TEXT, bookerName TEXT, city TEXT, designation TEXT)");
       await db.execute("CREATE TABLE attendanceOut(id INTEGER PRIMARY KEY, date TEXT, timeOut TEXT, totalTime TEXT, userId TEXT, latOut TEXT, lngOut TEXT, totalDistance TEXT, posted INTEGER DEFAULT 0)");
       await db.execute("CREATE TABLE recoveryForm (recoveryId TEXT, date TEXT, shopName TEXT, cashRecovery REAL, netBalance REAL, userId TEXT, bookerName TEXT, city TEXT, brand TEXT)");
@@ -102,6 +101,41 @@ class DBHelper {
         await db.execute("ALTER TABLE shop_new RENAME TO shop");
         if (kDebugMode) {
           print('Renamed shop_new to shop');
+        }
+      }
+      if (oldVersion < 3) {
+        // Adding new columns RSM, SM, and NMS to the login table
+        await db.execute("ALTER TABLE login ADD COLUMN RSM TEXT;");
+        await db.execute("ALTER TABLE login ADD COLUMN SM TEXT;");
+        await db.execute("ALTER TABLE login ADD COLUMN NSM TEXT;");
+        await db.execute("ALTER TABLE login ADD COLUMN RSM_ID TEXT;");
+        await db.execute("ALTER TABLE login ADD COLUMN SM_ID TEXT;");
+        await db.execute("ALTER TABLE login ADD COLUMN NSM_ID TEXT;");
+        if (kDebugMode) {
+          print('Added RSM, SM, NSM, RSM_ID, SM_ID and NSM_ID columns to login table');
+        }
+        await db.execute("CREATE TABLE HeadsShopVisits(id TEXT PRIMARY KEY, date TEXT, shopName TEXT, userId TEXT, city TEXT, bookerName TEXT, feedback TEXT, address TEXT, bookerId TEXT)");
+        if (kDebugMode) {
+          print('Created HeadsShopVisits table');
+        }
+      }
+      if (oldVersion < 4) {
+        // Adding brand column to shop table
+        await db.execute("ALTER TABLE shop ADD COLUMN brand TEXT;");
+        if (kDebugMode) {
+          print('Added brand column to shop table');
+        }
+
+        // Adding address column to attendance table
+        await db.execute("ALTER TABLE attendance ADD COLUMN address TEXT;");
+        if (kDebugMode) {
+          print('Added address column to attendance table');
+        }
+
+        // Adding address column to attendanceOut table
+        await db.execute("ALTER TABLE attendanceOut ADD COLUMN address TEXT;");
+        if (kDebugMode) {
+          print('Added address column to attendanceOut table');
         }
       }
     } catch (e) {
@@ -1950,7 +1984,7 @@ class DBHelper {
   }
 
 
-  Future<bool>login(Users user) async{
+  Future<bool>login(LoginModel user) async{
     final Database db = await initDatabase();
     var results=await db.rawQuery("select * from login where user_id = '${user.user_id}' AND password = '${user.password}'");
     if(results.isNotEmpty){
@@ -2042,5 +2076,55 @@ class DBHelper {
     }
   }
 
+  Future<String?> getUserNSM(String userId) async {
+    final Database db = await initDatabase();
+    try {
+      var results = await db.rawQuery("select NSM_ID from login where user_id = '$userId'");
+      if (results.isNotEmpty) {
+        // Explicitly cast to String
+        return results.first['NSM_ID'] as String?;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching user brand: $e");
+      }
+      return null;
+    }
+  }
+  Future<String?> getUserRSM(String userId) async {
+    final Database db = await initDatabase();
+    try {
+      var results = await db.rawQuery("select RSM_ID from login where user_id = '$userId'");
+      if (results.isNotEmpty) {
+        // Explicitly cast to String
+        return results.first['RSM_ID'] as String?;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching user brand: $e");
+      }
+      return null;
+    }
+  }Future<String?> getUserSM(String userId) async {
+    final Database db = await initDatabase();
+    try {
+      var results = await db.rawQuery("select SM_ID from login where user_id = '$userId'");
+      if (results.isNotEmpty) {
+        // Explicitly cast to String
+        return results.first['SM_ID'] as String?;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching user brand: $e");
+      }
+      return null;
+    }
+  }
 
 }

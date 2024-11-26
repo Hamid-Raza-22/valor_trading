@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:metaxperts_valor_trading_dynamic_apis/post_apis/Post_apis.dart';
-import '../location00.dart';
+
 import 'package:path_provider/path_provider.dart';
 
 import '../API/ApiServices.dart';
@@ -98,7 +98,7 @@ class LocationRepository {
                 locationApi,
                 gpxBytes,
               ),
-              // api.masterPostWithGPX(v.toMap(), '$Alt_IP_Address/location/post/', gpxBytes)
+              // api.masterPostWithGPX(v.toMap(), 'https://apex.oracle.com/pls/apex/metaxpertss/location/post/', gpxBytes)
             ]);
 
             if (results[0] == true) {
@@ -183,7 +183,7 @@ class LocationRepository {
   //           }
   //
   //           var result1 = await api.masterPostWithGPX(v.toMap(), 'http://103.149.32.30:8080/ords/metaxperts/location/post/', gpxBytes);
-  //           var result = await api.masterPostWithGPX(v.toMap(), '$Alt_IP_Address/location/post/', gpxBytes);
+  //           var result = await api.masterPostWithGPX(v.toMap(), 'https://apex.oracle.com/pls/apex/metaxpertss/location/post/', gpxBytes);
   //
   //           if (result == true && result1 == true) {
   //             await txn.rawUpdate(

@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-
-
 import '../../API/Globals.dart';
+
 import '../../Models/OrderModels/OrderDetailsModel.dart';
 import '../../Repositories/OrderRepository/OrderDetailsRepository.dart';
 
@@ -34,7 +33,6 @@ class OrderDetailsViewModel extends GetxController{
     'product_name':orderdetailsModel.productName,
     'quantity_booked': orderdetailsModel.quantity,
     'price': orderdetailsModel.price,
-      'details_date':orderdetailsModel.details_date
     });
     fetchAllOrderDetails();
   }

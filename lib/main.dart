@@ -7,7 +7,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:device_info_plus/device_info_plus.dart' show DeviceInfoPlugin;
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart' show MaterialApp, WidgetsFlutterBinding, runApp;
+import 'package:flutter/material.dart' show BuildContext, MaterialApp, StatelessWidget, Widget, WidgetsFlutterBinding, runApp;
 import 'package:flutter/services.dart' show SystemChannels;
 import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_background_service/flutter_background_service.dart' show AndroidConfiguration, FlutterBackgroundService, IosConfiguration, ServiceInstance;
@@ -16,6 +16,12 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart' sh
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:metaxperts_valor_trading_dynamic_apis/ip_addresses/IP_addresses.dart';
+import 'package:valor_trading/Views/FinalOrderBookingPage.dart';
+import 'package:valor_trading/Views/HomePage.dart';
+import 'package:valor_trading/Views/OrderBooking2ndPage.dart';
+import 'package:valor_trading/Views/ReturnFormPage.dart';
+import 'package:valor_trading/Views/ShopVisit.dart';
+import 'package:valor_trading/Views/login.dart';
 
 import '../Tracker/trac.dart' show startTimer;
 import '../Views/PolicyDBox.dart';
@@ -72,7 +78,7 @@ Future<void> main() async {
   // // Enable background execution
   // await FlutterBackground.enableBackgroundExecution();
   newDatabaseOutputs outputs = newDatabaseOutputs();
-  outputs.initializeLoginData();
+  await outputs.initializeLoginData();
 
   // Request notification permissions
   // await _requestPermissions();
@@ -86,12 +92,34 @@ Future<void> main() async {
 
   Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
 
-  runApp(
-    const MaterialApp(
+  // runApp(
+  //   const GetMaterialApp(
+  //     debugShowCheckedModeBanner: false,
+  //     home: SplashScreen(),
+  //   ),
+  // );
+  runApp(MyApp());
+}
+class MyApp extends StatelessWidget {
+  //final bool isAuthenticated;
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
-    ),
-  );
+      //initialRoute: isAuthenticated ? '/home' : '/policy',
+      //initialRoute: '/',
+      getPages: [
+        GetPage(name: '/', page: () => SplashScreen()),
+        GetPage(name: '/policy', page: () => PolicyDialog()),
+        GetPage(name: '/login', page: () => LoginForm()),
+        GetPage(name: '/home', page: () =>  HomePage()),
+        GetPage(name: '/development', page: () =>  ShopVisit()),
+        GetPage(name: '/materialShifting', page: () =>  const FinalOrderBookingPage()),
+        GetPage(name: '/newMaterial', page: () => OrderBooking2ndPage()),
+        GetPage(name: '/buildingWork', page: () => ReturnFormPage()),
+      ],
+    );
+  }
 }
 final shopViewModel = Get.put(ShopViewModel());
 final attendanceViewModel = Get.put(AttendanceViewModel());
@@ -170,11 +198,11 @@ void callbackDispatcher(){
     return Future.value(true);
   });
 }
-// Future<void> deleteDatabaseFile() async {
-//   io.Directory documentDirectory = await getApplicationDocumentsDirectory();
-//   String path = join(documentDirectory.path, 'shop.db');
-//   await deleteDatabase(path);
-// }
+Future<void> deleteDatabaseFile() async {
+  io.Directory documentDirectory = await getApplicationDocumentsDirectory();
+  String path = join(documentDirectory.path, 'valorTrading.db');
+  await deleteDatabase(path);
+}
 Future<void> initializeServiceLocation() async {
   final service = FlutterBackgroundService();
 

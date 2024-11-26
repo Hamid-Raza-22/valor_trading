@@ -2,11 +2,11 @@ import 'dart:convert' show base64Decode, base64Encode;
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../API/Globals.dart';
-import '../Databases/DBHelper.dart';
-import '../Models/OwnerModel.dart';
-import '../Models/ShopModel.dart';
-import '../Repositories/ShopRepository.dart';
+import '../../API/Globals.dart';
+import '../../Databases/DBHelper.dart';
+import '../../Models/OwnerModel.dart';
+import '../../Models/ShopModel.dart';
+import '../../Repositories/ShopRepository.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../API/ApiServices.dart';
@@ -105,6 +105,8 @@ class ShopViewModel extends GetxController{
   postShop(){
     shopRepository.postShopTable();
   }
+
+
 
 }
 
