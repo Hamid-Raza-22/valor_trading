@@ -31,15 +31,16 @@ android {
     namespace = "com.example.valor_trading"
     ndkVersion "27.0.12077973" // Specify the required NDK version
     compileSdkVersion 34 // Update this line to set the desired SDK version
-
+    buildToolsVersion "34.0.0" // Update to the latest version
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
         coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = "1.8" // Use 17 for better compatibility with modern Java features.
     }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }

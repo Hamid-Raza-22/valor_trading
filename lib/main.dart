@@ -2,8 +2,8 @@ import 'dart:async' show Future, Timer;
 import 'dart:io' as io;
 import 'dart:io' show Directory, InternetAddress, Platform, SocketException;
 import 'dart:ui' show DartPluginRegistrant;
-import 'package:connectivity/connectivity.dart';
 // import 'package:connectivity/connectivity.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:device_info_plus/device_info_plus.dart' show DeviceInfoPlugin;
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -22,7 +22,8 @@ import 'package:valor_trading/Views/OrderBooking2ndPage.dart';
 import 'package:valor_trading/Views/ReturnFormPage.dart';
 import 'package:valor_trading/Views/ShopVisit.dart';
 import 'package:valor_trading/Views/login.dart';
-
+// import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:io'; // For InternetAddress and SocketException
 import '../Tracker/trac.dart' show startTimer;
 import '../Views/PolicyDBox.dart';
 import '../location00.dart' show LocationService;

@@ -1,4 +1,6 @@
 
+import 'package:flutter/foundation.dart';
+
 import '../../API/Globals.dart';
 import '../../Databases/DBHelper.dart';
 import '../../Models/ProductsModel.dart';
@@ -17,6 +19,15 @@ class ProductsRepository {
       'brand',
       'quantity'
     ]);
+    // Print the raw data retrieved from the database
+    if (kDebugMode) {
+      print('Raw data from database:');
+    }
+    for (var map in maps) {
+      if (kDebugMode) {
+        print(map);
+      }
+    }
     List<ProductsModel> products = [];
     for (int i = 0; i < maps.length; i++) {
       products.add(ProductsModel.fromMap(maps[i]));

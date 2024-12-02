@@ -787,16 +787,15 @@ class newDatabaseOutputs {
   Future<void> initializeLoginData() async {
     final api = ApiServices();
     final db = DBHelper();
+    var logindata = await db.getAllLogins();
 
 
-      if (kDebugMode) {
-        print("loginTestingApi: $loginTestingApi");
-      }
+    if (logindata == null || logindata.isEmpty) {
       bool inserted = false;
 
       try {
         var response = await api.getApi(
-            loginTestingApi);
+            loginApi);
         inserted = await db.insertLogin(response); // returns True or False
 
         if (inserted == true) {
@@ -813,7 +812,7 @@ class newDatabaseOutputs {
 
         try {
           var response = await api.getApi(
-              loginTestingApi);
+              "https://apex.oracle.com/pls/apex/metaxpertss/login1/get/");
           inserted = await db.insertLogin(response); // returns True or False
 
           if (inserted) {
@@ -832,6 +831,8 @@ class newDatabaseOutputs {
           }
         }
       }
+    }await db.getAllLogins();
+
     await showLoginGetData();
   }
   // function for the update recovery from the data table

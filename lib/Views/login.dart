@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1092,10 +1094,10 @@ class LoginFormState extends State<LoginForm> {
 
                       ),
                       const SizedBox(height: 10.0),
-                      const Center(
+                     Center(
                         child: Text(
-                          'V.1.0.0',
-                          style: TextStyle(
+                          version,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold, // Makes the text bold
                             color: Colors.black,        // Sets the text color to black
                           ),

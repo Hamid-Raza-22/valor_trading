@@ -13,8 +13,9 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:nanoid/async.dart' show customAlphabet;
-import '../API/Globals.dart' show shopAddress, userCitys, userDesignation, userId;
+import '../API/Globals.dart' show shopAddress, userBrand, userCitys, userDesignation, userId;
 import '../View_Models/ShopViewModel.dart' show ShopViewModel;
 import '../Views/HomePage.dart' show HomePage;
 import 'package:path_provider/path_provider.dart';
@@ -103,6 +104,8 @@ class _ShopPageState extends State<ShopPage> {
   final FocusNode alternativePhoneNoFocusNode = FocusNode();
   static double? globalLatitude;
   static double? globalLongitude;
+  bool isLocationFetched = false;
+  bool isLocationChecked = false; // Checkbox state
   bool isButtonPressed2 = false;
   bool showLoading = false;
   int? shopId;
@@ -110,9 +113,10 @@ class _ShopPageState extends State<ShopPage> {
   bool isLocationAdded = false;
   File? _imageFile;
   final ImagePicker _imagePicker = ImagePicker();
+
   get shopData => null;
   List<String> citiesDropdownItems = [];
-bool isOrderConfirmedback = false;
+  bool isOrderConfirmedback = false;
   DBHelper dbHelper = DBHelper();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -122,14 +126,16 @@ bool isOrderConfirmedback = false;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userDesignation = prefs.getString('userDesignation');
 
-    if (userDesignation != 'ASM' && userDesignation != 'NSM' && userDesignation != 'RSM' && userDesignation != 'SM' && userDesignation != 'SPO' && userDesignation != 'SOS' ) {
+    if (userDesignation != 'SM' && userDesignation != 'NSM' &&
+        userDesignation != 'RSM' && userDesignation != 'ASM' &&
+        userDesignation != 'SPO' && userDesignation != 'SOS') {
       //  await fetchShopNames();
       setState(() {
         cityController.text = userCitys;
         //  distributorNameController.text = 'M.A Traders Sialkot';
-        cityController.selection = TextSelection.collapsed(offset: cityController.text.length);
+        cityController.selection =
+            TextSelection.collapsed(offset: cityController.text.length);
       });
-
     } else {
       await fetchCitiesNames();
       //await fetchShopNames1();
@@ -140,7 +146,8 @@ bool isOrderConfirmedback = false;
     List<dynamic> bussinessName = await dbHelper.getCitiesNames();
     setState(() {
       // Explicitly cast each element to String
-      citiesDropdownItems = bussinessName.map((dynamic item) => item.toString()).toSet().toList();
+      citiesDropdownItems =
+          bussinessName.map((dynamic item) => item.toString()).toSet().toList();
     });
   }
 
@@ -160,17 +167,18 @@ bool isOrderConfirmedback = false;
   //     dropdownItems = bussinessName.map((dynamic item) => item.toString()).toSet().toList();
   //   });
   // }
-  Future<void> saveImage()  async {
+  Future<void> saveImage() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final filePath = '${directory.path}/captured_image.jpg';
 
       // Compress the image76
-      Uint8List? compressedImageBytes = await FlutterImageCompress.compressWithFile(
+      Uint8List? compressedImageBytes = await FlutterImageCompress
+          .compressWithFile(
         _imageFile!.path,
         minWidth: 400,
         minHeight: 600,
-        quality:40,
+        quality: 40,
       );
 
       // Save the compressed image
@@ -188,13 +196,20 @@ bool isOrderConfirmedback = false;
 
   @override
   void initState() {
-
     super.initState();
-    saveCurrentLocation();
+    // saveCurrentLocation(context);
     _checkUserIdAndFetchShopNames();
   }
+  bool isSwitchDisabled = false; // Add this state variable
 
-  Future<void> saveCurrentLocation() async {
+  Future<void> saveCurrentLocation(BuildContext context) async {
+    if (!mounted) return; // Check if the widget is still mounted
+
+    setState(() {
+      isLoadingLocation = true; // Start loading
+      isSwitchDisabled = true;  // Disable the switch while loading
+    });
+
     PermissionStatus permission = await Permission.location.request();
 
     if (permission.isGranted) {
@@ -202,35 +217,73 @@ bool isOrderConfirmedback = false;
         Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
         );
-        globalLatitude  = position.latitude ;
-        globalLongitude = position.longitude ;
+        globalLatitude = position.latitude;
+        globalLongitude = position.longitude;
 
         if (kDebugMode) {
           print('Latitude: $globalLatitude, Longitude: $globalLongitude');
         }
-        // Using geocoding to convert latitude and longitude to an address
-        List<Placemark> placemarks = await placemarkFromCoordinates(globalLatitude! , globalLongitude!);
-        Placemark currentPlace = placemarks[0];
 
-        String address1 = "${currentPlace.thoroughfare} ${currentPlace.subLocality}, ${currentPlace.locality}${currentPlace.postalCode}, ${currentPlace.country}";
+        // Default address to "Pakistan" initially
+        String address1 = "Pakistan";
+
+        try {
+          // Attempt to get the address from coordinates
+          List<Placemark> placemarks = await placemarkFromCoordinates(
+              globalLatitude!, globalLongitude!);
+          Placemark? currentPlace = placemarks.isNotEmpty ? placemarks[0] : null;
+
+          if (currentPlace != null) {
+            address1 = "${currentPlace.thoroughfare ?? ''} ${currentPlace.subLocality ?? ''}, ${currentPlace.locality ?? ''} ${currentPlace.postalCode ?? ''}, ${currentPlace.country ?? ''}";
+
+            // Check if the constructed address is empty, fallback to "Pakistan"
+            if (address1.trim().isEmpty) {
+              address1 = "Pakistan";
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error getting placemark: $e');
+          }
+          // Keep the address as "Pakistan"
+        }
+
         shopAddress = address1;
+        isLocationFetched = true; // Set location fetched to true
+        isGpsEnabled = true; // GPS is enabled
 
         if (kDebugMode) {
           print('Address is: $address1');
         }
 
-        //print('Address is: $address1');
       } catch (e) {
         if (kDebugMode) {
-          print('Error getting location:$e');
+          print('Error getting location: $e');
         }
+        isGpsEnabled = false; // GPS is not enabled
       }
     } else {
       if (kDebugMode) {
         print('Location permission is not granted');
       }
+      // Ensure GPS remains disabled
+      isGpsEnabled = false;
+      // Navigate to HomePage
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
     }
+
+    if (!mounted) return; // Check again before calling setState()
+    setState(() {
+      isLoadingLocation = false; // Stop loading
+      isSwitchDisabled = false;  // Re-enable the switch after loading
+    });
   }
+
+
+
 
   @override
   void dispose() {
@@ -252,9 +305,10 @@ bool isOrderConfirmedback = false;
 
     super.dispose();
   }
+
   Future<void> _validateAndSave() async {
     setState(() {
-      isButtonPressed2= true;
+      isButtonPressed2 = true;
     });
     final form = _formKey.currentState;
     if (form!.validate()) {
@@ -263,7 +317,9 @@ bool isOrderConfirmedback = false;
         print('Selected City: $selectedCity');
       }
       bool isCityValid = true;
-      if (userDesignation == 'RSM' || userDesignation == 'NSM' || userDesignation == 'SM' || userDesignation == 'ASM' || userDesignation == 'SPO' || userDesignation == 'SOS') {
+      if (userDesignation == 'RSM' || userDesignation == 'NSM' ||
+          userDesignation == 'SM' || userDesignation == 'ASM' ||
+          userDesignation == 'SPO' || userDesignation == 'SOS') {
         var box = await Hive.openBox('shopNames');
         List<String> shopNames = box.get('shopNames')?.cast<String>() ?? [];
         shopNames.add(shopNameController.text);
@@ -272,10 +328,12 @@ bool isOrderConfirmedback = false;
         if (kDebugMode) {
           print(' Hive shopNames');
         }
-        isCityValid = selectedCity.isNotEmpty && citiesDropdownItems.contains(selectedCity);
-      }else{
+        isCityValid = selectedCity.isNotEmpty &&
+            citiesDropdownItems.contains(selectedCity);
+      } else {
         var box = await Hive.openBox('shopNamesByCities');
-        List<String> shopNamesByCities = box.get('shopNamesByCities')?.cast<String>() ?? [];
+        List<String> shopNamesByCities = box.get('shopNamesByCities')?.cast<
+            String>() ?? [];
         shopNamesByCities.add(shopNameController.text);
         await box.put('shopNamesByCities', shopNamesByCities);
         await box.close();
@@ -285,133 +343,134 @@ bool isOrderConfirmedback = false;
       }
 
       if (isCityValid) {
-      if (
-      // _imageFile == null ||
-          shopNameController.text.isEmpty ||
-          cityController.text.isEmpty ||
-          shopAddressController.text.isEmpty ||
-          ownerNameController.text.isEmpty ||
-          ownerCNICController.text.length < 13 ||
-          phoneNoController.text.isEmpty ||
-          alternativePhoneNoController.text.isEmpty) {
-        // Show toast message for invalid input
-        Fluttertoast.showToast(
-          msg: 'Please fill all fields properly.',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
+        if (
+        // _imageFile == null ||
+        isLocationFetched == false ||
+            shopNameController.text.isEmpty ||
+            cityController.text.isEmpty ||
+            shopAddressController.text.isEmpty ||
+            ownerNameController.text.isEmpty ||
+            ownerCNICController.text.length < 13 ||
+            phoneNoController.text.isEmpty ||
+            alternativePhoneNoController.text.isEmpty) {
+          // Show toast message for invalid input
+          Fluttertoast.showToast(
+            msg: 'Please fill all fields properly and Enable GPS.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+          );
 
-        // Highlight empty fields in red and focus on the first one
-        if (shopNameController.text.isEmpty) {
-          shopNameFocusNode.requestFocus();
-        } else if (cityController.text.isEmpty) {
-          cityFocusNode.requestFocus();
-        } else if (shopAddressController.text.isEmpty) {
-          shopAddressFocusNode.requestFocus();
-        } else if (ownerNameController.text.isEmpty) {
-          ownerNameFocusNode.requestFocus();
-        } else if (ownerCNICController.text.length < 13) {
-          ownerCNICFocusNode.requestFocus();
-        } else if (phoneNoController.text.isEmpty) {
-          phoneNoFocusNode.requestFocus();
-        } else if (alternativePhoneNoController.text.isEmpty) {
-          alternativePhoneNoFocusNode.requestFocus();
+          // Highlight empty fields in red and focus on the first one
+          if (shopNameController.text.isEmpty) {
+            shopNameFocusNode.requestFocus();
+          } else if (cityController.text.isEmpty) {
+            cityFocusNode.requestFocus();
+          } else if (shopAddressController.text.isEmpty) {
+            shopAddressFocusNode.requestFocus();
+          } else if (ownerNameController.text.isEmpty) {
+            ownerNameFocusNode.requestFocus();
+          } else if (ownerCNICController.text.length < 13) {
+            ownerCNICFocusNode.requestFocus();
+          } else if (phoneNoController.text.isEmpty) {
+            phoneNoFocusNode.requestFocus();
+          } else if (alternativePhoneNoController.text.isEmpty) {
+            alternativePhoneNoFocusNode.requestFocus();
+          }
+          setState(() {
+            isButtonPressed2 = false;
+          });
+
+          return;
         }
         setState(() {
-          isButtonPressed2= false;
+          showLoading = true;
         });
+        isOrderConfirmedback = true;
+        // Proceed with saving data if validation passes
+        // Add your data saving logic here
+        // String imagePath =  _imageFile!.path;
+        // List<int> imageBytesList = await File(imagePath).readAsBytes();
+        // Uint8List? imageBytes = Uint8List.fromList(imageBytesList);
+        var id = await customAlphabet('1234567890', 12);
 
-        return;
+        // double? latitude = currentLocation['latitude'];
+        // double? longitude = currentLocation['longitude'];
+
+        shopViewModel.addShop(ShopModel(
+            id: int.parse(id),
+            shopName: shopNameController.text,
+            city: cityController.text,
+            date: currentDate,
+            shopAddress: shopAddressController.text,
+            ownerName: ownerNameController.text,
+            ownerCNIC: ownerCNICController.text,
+            phoneNo: phoneNoController.text,
+            alternativePhoneNo: alternativePhoneNoController.text,
+            latitude: globalLatitude,
+            longitude: globalLongitude,
+            userId: userId,
+            brand: userBrand,
+            address: shopAddress
+          //body: imageBytes,
+          // ... existing parameters ...
+          // latitude: shopViewModel.latitude,
+          // longitude: shopViewModel.longitude,
+        ));
+
+
+        String shopid = await shopViewModel.fetchLastShopId();
+        shopId = int.parse(shopid);
+
+
+        //
+        //
+        // shopNameController.text = "";
+        // cityController.text = "";
+        // shopAddressController.text = "";
+        // ownerNameController.text = "";
+        // ownerCNICController.text = "";
+        // phoneNoController.text = "";
+        // alternativePhoneNoController.text = "";
+        bool isConnected = await isInternetAvailable();
+        if (isConnected == true) {
+          shopViewModel.postShop();
+        }
+
+        // DBHelper dbmaster = DBHelper();
+        //
+        // dbmaster.postShopTable();
+
+        // Navigate to the home page after saving
+        // Inside the ShopPage where you navigate back to HomePage
+        // Introduce a 5-second delay
+
+        await Future.delayed(const Duration(seconds: 8));
+
+        Navigator.pop(context);
+        const HomePage(); // Stop the timer when navigating back
+
+        // Show success toast message
+        Fluttertoast.showToast(
+          msg: 'Data saved successfully!',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.black,
+          textColor: Colors.white,
+        );
+      } else {
+        // Show toast message for invalid city
+        Fluttertoast.showToast(
+          msg: 'Please select a valid city.',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
       }
-      setState(() {
-        showLoading = true;
-      });
-      isOrderConfirmedback= true;
-      // Proceed with saving data if validation passes
-      // Add your data saving logic here
-      // String imagePath =  _imageFile!.path;
-      // List<int> imageBytesList = await File(imagePath).readAsBytes();
-      // Uint8List? imageBytes = Uint8List.fromList(imageBytesList);
-       var id = await customAlphabet('1234567890', 12);
-
-      // double? latitude = currentLocation['latitude'];
-      // double? longitude = currentLocation['longitude'];
-
-      shopViewModel.addShop(ShopModel(
-        id: int.parse(id),
-        shopName: shopNameController.text,
-        city: cityController.text,
-        date: currentDate,
-        shopAddress: shopAddressController.text,
-        ownerName: ownerNameController.text,
-        ownerCNIC: ownerCNICController.text,
-        phoneNo: phoneNoController.text,
-        alternativePhoneNo: alternativePhoneNoController.text,
-        latitude: globalLatitude,
-        longitude: globalLongitude,
-        userId: userId,
-        address: shopAddress
-        //body: imageBytes,
-        // ... existing parameters ...
-        // latitude: shopViewModel.latitude,
-        // longitude: shopViewModel.longitude,
-      ));
-
-
-      String shopid = await shopViewModel.fetchLastShopId();
-      shopId = int.parse(shopid);
-
-
-
-      //
-      //
-      // shopNameController.text = "";
-      // cityController.text = "";
-      // shopAddressController.text = "";
-      // ownerNameController.text = "";
-      // ownerCNICController.text = "";
-      // phoneNoController.text = "";
-      // alternativePhoneNoController.text = "";
-      bool isConnected = await isInternetAvailable();
-      if (isConnected== true) {
-        shopViewModel.postShop();
-      }
-
-      // DBHelper dbmaster = DBHelper();
-      //
-      // dbmaster.postShopTable();
-
-      // Navigate to the home page after saving
-      // Inside the ShopPage where you navigate back to HomePage
-      // Introduce a 5-second delay
-
-      await Future.delayed(const Duration(seconds: 8));
-
-      Navigator.pop(context);
-      const HomePage(); // Stop the timer when navigating back
-
-      // Show success toast message
-      Fluttertoast.showToast(
-        msg: 'Data saved successfully!',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: const Color(0xFF212529),
-        textColor: Colors.white,
-      );
-    } else {
-      // Show toast message for invalid city
-      Fluttertoast.showToast(
-        msg: 'Please select a valid city.',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    }
     } else {
       // Show toast message for invalid input
       Fluttertoast.showToast(
@@ -421,7 +480,7 @@ bool isOrderConfirmedback = false;
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
-      isOrderConfirmedback=false;
+      isOrderConfirmedback = false;
     }
     setState(() {
       showLoading = false;
@@ -429,501 +488,343 @@ bool isOrderConfirmedback = false;
     });
   }
 
+  bool isGpsEnabled = false;
+  bool isLoadingLocation = false;
+
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: () async {
-      // Check if the order is confirmed
-      if (isOrderConfirmedback) {
-        // Order is confirmed, prevent going back
-        return false;
-      } else {
-        return true;
-      }
-    },
-    child: SafeArea(
-     child: Scaffold(
-          body: SingleChildScrollView(
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
+      onWillPop: () async => isOrderConfirmedback ? false : true,
+      child: SafeArea(
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text(('Add Shop Details'),
+              style:  TextStyle(
                 color: Colors.white,
+                fontSize: 22.0,
               ),
-              child: Column(
-                  children: <Widget>[Column(
+            ),
+            backgroundColor: Colors.black,
+            elevation: 0,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ListView(
+              children: <Widget>[
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      'Date: $currentDate',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+                Form(
+                  key: _formKey,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      // Display the live date
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            ' Date: $currentDate',
-                            style: const TextStyle(
-                              fontSize: 13,
-
-                            ),
-                          ),
-                        ),
-                      ), const SizedBox(height: 10),
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            // Text Field 1 - Shop Name
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Shop Name',
-                                    style:
-                                    TextStyle(fontSize: 18, color: Colors.black,  fontWeight: FontWeight.bold,),
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: shopNameController,
-                                  focusNode: shopNameFocusNode,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.deny(RegExp(r'[/\\]')), // Filter out the '/' and '\' characters
-                                  ],
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15), // Adjust the padding as needed
-                                    labelText: 'Enter Shop Name',
-                                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.red),
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter shop name';
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'City',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                if (userDesignation != 'SM' && userDesignation != 'NSM' && userDesignation != 'RSM' && userDesignation != 'ASM' && userDesignation != 'SPO'  && userDesignation != 'SOS') TextFormField(
-                                  controller: cityController,
-
-                                  readOnly: true,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                    labelText: 'Enter City',
-                                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                ) else
-            DropdownSearch<String>(
-            items: citiesDropdownItems, // List of city options
-            popupProps: PopupProps.menu(
-              showSearchBox: true, // Enable search functionality
-              searchFieldProps: TextFieldProps(
-                decoration: InputDecoration(
-                  hintText: 'Search City', // Placeholder text
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                ),
-                style: TextStyle(fontSize: 14),
-              ),
-              menuProps: MenuProps(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                labelText: 'Enter City',
-                floatingLabelBehavior: FloatingLabelBehavior.never,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5.0),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.red),
-                  borderRadius: BorderRadius.circular(5.0),
-                ),
-              ),
-            ),
-            selectedItem: cityController.text.isNotEmpty ? cityController.text : null,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select a valid city';
-              }
-              return null; // Return null if validation passes
-            },
-            onChanged: (String? suggestion) {
-              if (suggestion != null && citiesDropdownItems.contains(suggestion)) {
-                setState(() {
-                  cityController.text = suggestion;
-                });
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('Invalid City'),
-                      content: const Text('Please select a city from the provided list.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('OK'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              }
-            },
-          )
-
-       ],
-                            ),
-                            const SizedBox(height: 10),
-                            // Text Field 2 - Shop Address
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Shop Address',
-                                    style:
-                                    TextStyle(fontSize: 18, color: Colors.black,  fontWeight: FontWeight.bold,),
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: shopAddressController,
-                                  focusNode: shopAddressFocusNode,
-                                  decoration: InputDecoration( contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),                              labelText: 'Enter Shop Address',
-                                    floatingLabelBehavior:
-                                    FloatingLabelBehavior.never,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.red),
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter shop address';
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            // Text Field 3 - Owner Name
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Owner Name',
-                                    style:
-                                    TextStyle(fontSize: 18, color: Colors.black,  fontWeight: FontWeight.bold,),
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: ownerNameController,
-                                  focusNode: ownerNameFocusNode,
-                                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]'))],
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                    labelText: 'Enter Owner Name',
-                                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.red),
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter owner name';
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height:10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Owner CNIC',
-                                    style:       TextStyle(fontSize: 18, color: Colors.black,  fontWeight: FontWeight.bold,),
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: ownerCNICController,
-                                  focusNode: ownerCNICFocusNode,
-
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                    LengthLimitingTextInputFormatter(13),
-                                    CNICFormatter(),
-                                  ],
-                                  keyboardType: TextInputType.phone, // Set the keyboard type to phone
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                    labelText: '_____-_______-_',
-                                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.red),
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter CNIC';
-                                    }
-                                    if (value.length < 13) {
-                                      return 'CNIC must be at least 13 digits';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            // Text Field 5 - Phone Number
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Phone Number',
-                                    style:       TextStyle(fontSize: 18, color: Colors.black,  fontWeight: FontWeight.bold,),
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: phoneNoController,
-                                  focusNode: phoneNoFocusNode,
-
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                    LengthLimitingTextInputFormatter(11), // Limit the length to 11 characters
-                                  ],
-                                  keyboardType: TextInputType.phone,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                    labelText: '03_________',
-                                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.red),
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter mobile num';
-                                    } else if (value.length != 11) {
-                                      return 'Phone number must be 11 digits';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Alternative Phone Number',
-                                    style:  TextStyle(fontSize: 18, color: Colors.black,  fontWeight: FontWeight.bold,),
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: alternativePhoneNoController,
-                                  focusNode: alternativePhoneNoFocusNode,
-
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                    LengthLimitingTextInputFormatter(11), // Limit the length to 11 characters
-                                  ],
-                                  keyboardType: TextInputType.phone,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                    labelText: '03_________',
-                                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.red),
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value!.isEmpty && value.length != 11) {
-                                      return 'Alternative phone number / Enter 0';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ],
-                            ),
-                             const SizedBox(height: 20),
-                            // ElevatedButton(
-                            //   onPressed: () async {
-                            //     try {
-                            //       final image = await _imagePicker.getImage(
-                            //         source: ImageSource.camera,
-                            //         imageQuality: 40, // Adjust the quality (0 to 100)
-                            //       );
-                            //
-                            //       if (image != null) {
-                            //         setState(() {
-                            //           _imageFile = File(image.path);
-                            //
-                            //           shopData?['imagePath'] = _imageFile!.path;
-                            //
-                            //           // // Convert the image file to bytes and store it in _imageBytes
-                            //           // List<int> imageBytesList = _imageFile!.readAsBytesSync();
-                            //           // _imageBytes = Uint8List.fromList(imageBytesList);
-                            //         });
-                            //
-                            //         // Save only the image
-                            //         await saveImage();
-                            //
-                            //       } else {
-                            //         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                            //           content: Text('No image selected.'),
-                            //         ));
-                            //       }
-                            //     } catch (e) {
-                            //       if (kDebugMode) {
-                            //         print('Error capturing image: $e');
-                            //       }
-                            //     }
-                            //   },
-                            //   style: ElevatedButton.styleFrom(
-                            //     backgroundColor: Colors.green,
-                            //     foregroundColor: Colors.white,
-                            //     shape: RoundedRectangleBorder(
-                            //       borderRadius: BorderRadius.circular(5),
-                            //     ),
-                            //   ),
-                            //   child: const Text('+ Add Photo'),
-                            // ),
-                            //
-                            // const SizedBox(height: 10),
-                            // // Add the Stack widget to overlay the warning icon on top of the image
-                            // Stack(
-                            //   alignment: Alignment.center,
-                            //   children: [
-                            //     if (_imageFile != null)
-                            //       Image.file(
-                            //         _imageFile!,
-                            //         height: 300,
-                            //         width: 400,
-                            //         fit: BoxFit.cover,
-                            //       ),
-                            //     if (_imageFile == null)
-                            //       const Icon(
-                            //         Icons.warning,
-                            //         color: Colors.red,
-                            //         size: 48,
-                            //       ),
-                            //   ],
-                            // ),
-                            // const SizedBox(height: 20),
-                            // Align the "save" button to the bottom right
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: SizedBox(
-                                width: 100,
-                                height: 30,
-                                child: ElevatedButton(
-                                 onPressed: isButtonPressed2 || showLoading
-                                         ? null
-                                     : () async {_validateAndSave();},
-
-                                   style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.white, backgroundColor: const Color(0xFF212529),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    minimumSize: const Size(200, 50),
-                                  ),
-
-                                  child:  showLoading
-                                ? const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              )
-                                 : const Text(
-                                    'Save',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                    ),
-                                ),
-
-
-                              ),
-                            ),
-                            )
-
-                          ],
-                        ),
-                      ),
+                      _buildTextField(
+                          'Shop Name', shopNameController, shopNameFocusNode,
+                          'Enter Shop Name', Icons.store),
+                      // const SizedBox(height: 0),
+                      _buildCityField(),
+                      // const SizedBox(height: 2),
+                      _buildTextField('Shop Address', shopAddressController,
+                          shopAddressFocusNode, 'Enter Shop Address',
+                          Icons.location_on),
+                      // const SizedBox(height: 1),
+                      _buildTextField(
+                          'Owner Name', ownerNameController, ownerNameFocusNode,
+                          'Enter Owner Name', Icons.person),
+                      // const SizedBox(height: 10),
+                      _buildCnicField(),
+                      // const SizedBox(height: 10),
+                      _buildPhoneNumberField(
+                          phoneNoController, phoneNoFocusNode, 'Phone Number'),
+                      // const SizedBox(height: 10),
+                      _buildPhoneNumberField(alternativePhoneNoController,
+                          alternativePhoneNoFocusNode,
+                          'Alternative Phone Number'),
+                      // const SizedBox(height: 5),
+                      _buildGpsStatusWidget(),
+                      const SizedBox(height: 1),
+                      _buildSaveButton(),
                     ],
                   ),
-                  ]),
+                ),
+              ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller,
+      FocusNode focusNode, String hint, IconData icon,
+      {TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.black54),
+          // Set the label color to black
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.black54),
+          prefixIcon: Icon(icon, color: Colors.black),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.black),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        validator: (value) {
+          if (value!.isEmpty) {
+            return 'Please enter $label';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildCnicField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: ownerCNICController,
+        focusNode: ownerCNICFocusNode,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(
+              RegExp(r'^\d{0,5}-?\d{0,7}-?\d{0,1}')),
+          // Restrict input to match CNIC pattern
+          LengthLimitingTextInputFormatter(15),
+          // Limit to 15 characters (13 digits + 2 hyphens)
+          TextInputFormatter.withFunction((oldValue, newValue) {
+            String text = newValue.text;
+
+            // Adding hyphen after the first 5 digits
+            if (text.length > 5 && text[5] != '-') {
+              text = '${text.substring(0, 5)}-${text.substring(5)}';
+            }
+
+            // Adding hyphen after the next 7 digits (i.e., 13th character)
+            if (text.length > 13 && text[13] != '-') {
+              text = '${text.substring(0, 13)}-${text.substring(13)}';
+            }
+
+            return TextEditingValue(
+              text: text,
+              selection: TextSelection.collapsed(offset: text.length),
+            );
+          }),
+        ],
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: 'Owner CNIC',
+          labelStyle: const TextStyle(color: Colors.black54),
+          hintText: '00000-_______-_',
+          hintStyle: const TextStyle(color: Colors.black54),
+          prefixIcon: const Icon(Icons.credit_card, color: Colors.black),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.black),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        validator: (value) {
+          if (value!.isEmpty) {
+            return 'Please enter CNIC';
+          }
+          if (value.length != 15) {
+            return 'CNIC must be 13 digits in the format 34603-2290070-7';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildPhoneNumberField(TextEditingController controller,
+      FocusNode focusNode, String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(11), // Limit to 11 characters
+        ],
+        keyboardType: TextInputType.phone,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.black54),
+          hintText: '03_________',
+          hintStyle: const TextStyle(color: Colors.black54),
+          prefixIcon: const Icon(Icons.phone, color: Colors.black),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.black),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        validator: (value) {
+          if (value!.isEmpty) {
+            return 'Please enter $label';
+          } else if (value.length != 11) {
+            return '$label must be 11 digits';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildCityField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: userDesignation != 'SM' && userDesignation != 'NSM' &&
+          userDesignation != 'RSM' && userDesignation != 'ASM' &&
+          userDesignation != 'SPO' && userDesignation != 'SOS'
+          ? TextFormField(
+        controller: cityController,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: 'City',
+          labelStyle: const TextStyle(color: Colors.black54),
+          hintText: 'Enter City',
+          hintStyle: const TextStyle(color: Colors.black54),
+          prefixIcon: const Icon(Icons.location_city, color: Colors.black),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.black),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      )
+          : TypeAheadFormField(
+        textFieldConfiguration: TextFieldConfiguration(
+          controller: cityController,
+          decoration: InputDecoration(
+            labelText: 'City',
+            labelStyle: const TextStyle(color: Colors.black54),
+            hintText: 'Enter City',
+            hintStyle: const TextStyle(color: Colors.black54),
+            prefixIcon: const Icon(Icons.location_city, color: Colors.black),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.black),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+        validator: (value) {
+          if (value!.isEmpty) {
+            return 'Please select a valid city';
+          }
+          return null;
+        },
+        suggestionsCallback: (pattern) {
+          return citiesDropdownItems.where((city) =>
+              city.toLowerCase().contains(pattern.toLowerCase())).toList();
+        },
+        itemBuilder: (context, suggestion) {
+          return ListTile(
+            title: Text(suggestion),
+          );
+        },
+        onSuggestionSelected: (suggestion) {
+          cityController.text = suggestion;
+        },
+      ),
+    );
+  }
+
+  Widget _buildGpsStatusWidget() {
+    return Row(
+      children: [
+        Switch(
+          value: isGpsEnabled,
+          onChanged: isSwitchDisabled
+              ? null // Disable interaction when switch is disabled
+              : (bool value) async {
+            if (value) {
+              await saveCurrentLocation(context);
+            } else {
+              setState(() {
+                isGpsEnabled = false;
+              });
+            }
+          },
+          activeColor: Colors.black,
+        ),
+        const Text(
+          'GPS Enabled',
+          style: TextStyle(fontSize: 18),
+        ),
+      ],
+    );
+  }
+  Widget _buildSaveButton() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: ElevatedButton(
+        onPressed: isButtonPressed2 || showLoading
+            ? null
+            : () async {
+          setState(() {
+            isButtonPressed2 = true;
+          });
+          await _validateAndSave();
+          setState(() {
+            isButtonPressed2 = false;
+          });
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 5,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+          textStyle: const TextStyle(fontSize: 18),
+        ),
+        child: showLoading
+            ? SizedBox(
+          width: 24.0,
+          height: 24.0,
+          child: Center(
+            child: LoadingAnimationWidget.staggeredDotsWave(
+                color: Colors.white, size: 24.0),
+          ),
         )
-    ));
-    }
+            : const Text('Save'),
+      ),
+    );
+  }
+
+
 }
