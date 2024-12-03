@@ -38,7 +38,7 @@ class Productss extends ChangeNotifier {
 
   Future<void> fetchProducts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await productsViewModel.fetchProductsByBrand(globalselectedbrand);
+    await productsViewModel.fetchProductsByBrands(globalselectedbrand);
     var products = productsViewModel.allProducts;
 
     rows.clear();
@@ -455,7 +455,7 @@ class FinalOrderBookingPageState extends State<FinalOrderBookingPage> {
                               if (kDebugMode) {
                                 print('product: $selectedItem');
                                 print('Rate String: $rateString ');
-                                print('quatity: $quantity'); }
+                                print('quantity: $quantity'); }
                             }
                           }
                           // Check if there are any non-zero quantity items

@@ -52,7 +52,7 @@ class ProductsRepository {
         'quantity'
       ],
       where: 'brand = ?',
-      whereArgs: [userBrand],
+      whereArgs: [globalselectedbrand],
     );
     List<ProductsModel> products = [];
     for (int i = 0; i < maps.length; i++) {

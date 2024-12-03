@@ -138,6 +138,9 @@ class DBHelper {
           print('Added address column to attendanceOut table');
         }
       }
+      if(oldVersion < 5){
+        await db.execute("ALTER TABLE order_details ADD COLUMN details_date TEXT;");
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Error upgrading database: $e');

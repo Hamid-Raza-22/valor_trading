@@ -63,7 +63,7 @@ class OrderMasterRepository{
           try {
             final results = await Future.wait([
              // api.masterPost(v.toMap(), orderMasterApi),
-               api.masterPost(v.toMap(), 'http://103.149.32.30:4000/api/order-masters'),
+               api.masterPost(v.toMap(), orderMasterApi),
             ]);
 
             if (results[0] == true) {

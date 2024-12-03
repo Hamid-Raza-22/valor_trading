@@ -34,7 +34,7 @@ class ProductsViewModel extends GetxController {
     fetchAllProductsModel();
   }
 
-  Future<void> fetchProductsByBrand(String brand) async {
+  Future<void> fetchProductsByBrands(String brand) async {
     try {
       String brand = userBrand;
       // Fetch products by brand from the repository

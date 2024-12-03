@@ -460,7 +460,7 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
     // Fetch all rows from the database for the current date
     final Database? db = await DBHelper().db;
     List<Map<String, dynamic>> queryRows = await db!.query(
-      'orderDetailsData',
+      'order_details',
       where: 'details_date = ?',
       whereArgs: [ordersDate],
     );

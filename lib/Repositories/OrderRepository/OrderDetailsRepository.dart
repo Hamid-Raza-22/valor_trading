@@ -16,7 +16,7 @@ class OrderDetailsRepository {
 
   Future<List<OrderDetailsModel>> getOrderDetails() async {
     var dbClient = await dbHelperOrderDetails.db;
-    List<Map> maps = await dbClient!.query('order_details', columns: ['id','order_master_id', 'productName', 'quantity', 'price', 'amount','userId','posted']);
+    List<Map> maps = await dbClient!.query('order_details', columns: ['id','order_master_id', 'productName', 'quantity','details_date', 'price', 'amount','userId','posted']);
     List<OrderDetailsModel> orderdetails = [];
     for (int i = 0; i < maps.length; i++) {
 
@@ -54,13 +54,14 @@ class OrderDetailsRepository {
               quantity: i['quantity'].toString(),
               amount: i['amount'].toString(),
               userId: i['userId'].toString(),
+              detailsDate: i['details_date'].toString()
             );
 
             try {
               bool result = await api.masterPost(
                 v.toMap(),
-                  'http://103.149.32.30:4000/api/order-details'
-               // orderDetailsApi,
+                  // 'http://103.149.32.30:4000/api/order-details'
+                orderDetailsApi,
               );
 
               if (result==true) {

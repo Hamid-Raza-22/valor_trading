@@ -13,6 +13,7 @@ class PostingStatus {
 DBHelper dbHelper = DBHelper();
 String currentPostId= "";
 bool _isPosting = false;
+dynamic detailsDate ="";
 dynamic version = "v: 0.6.1";
 String pending ="PENDING";
 String SellectedproductName= "";

@@ -67,6 +67,7 @@ class _SplashScreenState extends State<SplashScreen> {
         //   );
         //   break;
           default:
+
           // Handle cases where designation does not match any of the above
             Navigator.of(context).push(
               MaterialPageRoute(

@@ -14,7 +14,6 @@ import 'dart:io';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:nanoid/async.dart';
 import '../API/Globals.dart';
 import '../View_Models/StockCheckItems.dart';
@@ -201,7 +200,7 @@ class ShopVisitState extends State<ShopVisit> {
     onCreatee();
     _loadCounter();
     //  _saveCounter();
-    fetchProductsNamesByBrand();
+    //fetchProductsNamesByBrand();
     saveCurrentLocation();
 
     shopNameNotifier.addListener(() {
@@ -1460,17 +1459,17 @@ class ShopVisitState extends State<ShopVisit> {
       _brandDropDownController.text = selectedBrand;
     });
   }
-
-  Future<void> fetchProductsNamesByBrand() async {
-    String selectedBrand = globalselectedbrand;
-    DBHelper dbHelper = DBHelper();
-    List<dynamic> productNames = await dbHelper.getProductsNamesByBrand(selectedBrand);
-
-    setState(() {
-      // Explicitly cast each element to String
-      dropdownItems5 = productNames.map((dynamic item) => item.toString()).toSet().toList();
-    });
-  }
+  //
+  // Future<void> fetchProductsNamesByBrand() async {
+  //   String selectedBrand = globalselectedbrand;
+  //   DBHelper dbHelper = DBHelper();
+  //   List<dynamic> productNames = await dbHelper.getProductsNamesByBrand(selectedBrand);
+  //
+  //   setState(() {
+  //     // Explicitly cast each element to String
+  //     dropdownItems5 = productNames.map((dynamic item) => item.toString()).toSet().toList();
+  //   });
+  // }
 }
 
 class StockCheckItem {
@@ -1492,7 +1491,7 @@ class Products extends GetxController {
   }
 
   Future<void> fetchProducts() async {
-    await productsViewModel.fetchProductsByBrand(globalselectedbrand);
+    await productsViewModel.fetchProductsByBrands(globalselectedbrand);
     var products = productsViewModel.allProducts;
 
     // Clear existing rows and controllers before adding new ones
