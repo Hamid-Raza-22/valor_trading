@@ -140,6 +140,7 @@ class DBHelper {
       }
       if(oldVersion < 5){
         await db.execute("ALTER TABLE order_details ADD COLUMN details_date TEXT;");
+        await db.execute("ALTER TABLE orderDetailsData ADD COLUMN details_date TEXT;");
       }
     } catch (e) {
       if (kDebugMode) {

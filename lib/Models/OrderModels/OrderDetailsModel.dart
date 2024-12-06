@@ -50,11 +50,14 @@ class OrderDetailsModel {
 class GetOrderDetailsModel {
   dynamic? order_no;
   String? product_name;
+  dynamic detailsDate;
+
 
 
   GetOrderDetailsModel({
     this.order_no,
     this.product_name,
+    this.detailsDate
 
   });
 
@@ -62,7 +65,7 @@ class GetOrderDetailsModel {
     return GetOrderDetailsModel(
       order_no: json['order_no'],
       product_name: json['product_name'],
-
+        detailsDate: json['details_date']
     );
   }
 
@@ -70,6 +73,7 @@ class GetOrderDetailsModel {
     return {
       'order_no': order_no,
       'product_name': product_name,
+      'details_date': detailsDate
 
     };
   }

@@ -2,14 +2,33 @@
   "project_info": {
     "project_number": "568816791071",
     "project_id": "valor-trading-erp",
-    "storage_bucket": "valor-trading-erp.appspot.com"
+    "storage_bucket": "valor-trading-erp.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:568816791071:android:dbde65e3ed9449e5ee2f2a",
         "android_client_info": {
-          "package_name": "com.example.valor_trading"
+          "package_name": "com.hamid.valor_trading"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBiQHUTm6cf6IMbt-9Z-BqRRqVTp62PPA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:568816791071:android:ed3df1b8a9ebe999ee2f2a",
+        "android_client_info": {
+          "package_name": "com.hamid.valor_trading"
         }
       },
       "oauth_client": [],

@@ -42,20 +42,20 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyAaT85zIkurgEogtTw5IFdMXVr_hYG2Al8',
-    appId: '1:568816791071:web:728d2732e77f169dee2f2a',
+    appId: '1:568816791071:web:129360d412ebb043ee2f2a',
     messagingSenderId: '568816791071',
     projectId: 'valor-trading-erp',
     authDomain: 'valor-trading-erp.firebaseapp.com',
-    storageBucket: 'valor-trading-erp.appspot.com',
-    measurementId: 'G-302NYC0E1W',
+    storageBucket: 'valor-trading-erp.firebasestorage.app',
+    measurementId: 'G-Z52BNEFR8P',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCBiQHUTm6cf6IMbt-9Z-BqRRqVTp62PPA',
-    appId: '1:568816791071:android:dbde65e3ed9449e5ee2f2a',
+    appId: '1:568816791071:android:ed3df1b8a9ebe999ee2f2a',
     messagingSenderId: '568816791071',
     projectId: 'valor-trading-erp',
-    storageBucket: 'valor-trading-erp.appspot.com',
+    storageBucket: 'valor-trading-erp.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     appId: '1:568816791071:ios:ac420daee0ce32b9ee2f2a',
     messagingSenderId: '568816791071',
     projectId: 'valor-trading-erp',
-    storageBucket: 'valor-trading-erp.appspot.com',
+    storageBucket: 'valor-trading-erp.firebasestorage.app',
     iosBundleId: 'com.example.valorTrading',
   );
 
@@ -72,7 +72,7 @@ class DefaultFirebaseOptions {
     appId: '1:568816791071:ios:ac420daee0ce32b9ee2f2a',
     messagingSenderId: '568816791071',
     projectId: 'valor-trading-erp',
-    storageBucket: 'valor-trading-erp.appspot.com',
+    storageBucket: 'valor-trading-erp.firebasestorage.app',
     iosBundleId: 'com.example.valorTrading',
   );
 
@@ -82,7 +82,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '568816791071',
     projectId: 'valor-trading-erp',
     authDomain: 'valor-trading-erp.firebaseapp.com',
-    storageBucket: 'valor-trading-erp.appspot.com',
+    storageBucket: 'valor-trading-erp.firebasestorage.app',
     measurementId: 'G-Z52BNEFR8P',
   );
+
 }

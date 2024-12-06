@@ -33,6 +33,7 @@ class OrderDetailsViewModel extends GetxController{
     'product_name':orderdetailsModel.productName,
     'quantity_booked': orderdetailsModel.quantity,
     'price': orderdetailsModel.price,
+      'details_date':orderdetailsModel.detailsDate
     });
     fetchAllOrderDetails();
   }

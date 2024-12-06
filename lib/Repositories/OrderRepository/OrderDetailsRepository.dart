@@ -278,7 +278,7 @@ class OrderDetailsRepository {
     var dbClient = await dbHelperOrderDetails.db;
     List<Map> maps = await dbClient!.query(
       'orderDetailsData',
-      columns: ['order_no', 'product_name'],
+      columns: ['order_no', 'product_name', 'details_date'],
       where: 'order_no = ?',
       whereArgs: [selectedorderno],
     );

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.valor_trading">
+    package="com.hamid.valor_trading">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!--    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>-->
@@ -50,7 +50,7 @@
             />
         <!-- WorkManager Configuration -->
         <service
-            android:name="com.example.valor_trading.workmanager.TaskExecutor"
+            android:name="com.hamid.valor_trading.workmanager.TaskExecutor"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
