@@ -66,41 +66,18 @@ Future<void> main() async {
       print('Failed to get IP Address: $e');
     }
   }
-// await dbHelper.db;
-  // Clear previous database if exists
-  //await _clearDatabaseIfFirstLaunch();
-  //iqra
-// hamid
-  // // AndroidAlarmManager.initialize();
-  //
-  // Initialize the FlutterBackground plugin
-  // await FlutterBackground.initialize();
-  //
-  // // Enable background execution
-  // await FlutterBackground.enableBackgroundExecution();
   newDatabaseOutputs outputs = newDatabaseOutputs();
   await outputs.initializeLoginData();
-
-  // Request notification permissions
-  // await _requestPermissions();
-
-  // await initializeServiceLocation();
-
   // Ensure Firebase is initialized before running the apm
   await Firebase.initializeApp();
   await Hive.initFlutter();
   // await BackgroundLocator.initialize();
 
   Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-
-  // runApp(
-  //   const GetMaterialApp(
-  //     debugShowCheckedModeBanner: false,
-  //     home: SplashScreen(),
-  //   ),
-  // );
   runApp(MyApp());
 }
+
+
 class MyApp extends StatelessWidget {
   //final bool isAuthenticated;
   @override
@@ -122,6 +99,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 final shopViewModel = Get.put(ShopViewModel());
 final attendanceViewModel = Get.put(AttendanceViewModel());
 final shopisitViewModel = Get.put(ShopVisitViewModel());
@@ -132,6 +110,7 @@ final returnformViewModel = Get.put(ReturnFormViewModel());
 final ordermasterViewModel = Get.put(OrderMasterViewModel());
 final orderdetailsViewModel = Get.put(OrderDetailsViewModel());
 final locationViewModel = Get.put(LocationViewModel());
+
 Future<void> _requestPermissions() async {
   // Request notification permission
   if (await Permission.notification.request().isDenied) {
@@ -151,46 +130,47 @@ Future<void> _requestPermissions() async {
 //
 //   await dbHelper.db;
 // }
-Future<void> _clearDatabaseIfFirstLaunch() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
+// Future<void> _clearDatabaseIfFirstLaunch() async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   bool isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
+//
+//   if (isFirstLaunch) {
+//     io.Directory documentDirectory = await getApplicationDocumentsDirectory();
+//     String path = join(documentDirectory.path, 'valorTrading.db');
+//
+//     if (await io.File(path).exists()) {
+//       // await deleteDatabase(path);
+//       await _logOut();
+//       if (kDebugMode) {
+//         print('Previous database cleared.');
+//       }
+//     } else {
+//       if (kDebugMode) {
+//         print('No previous database found to clear.');
+//       }
+//     }
+//
+//     await prefs.setBool('isFirstLaunch', false);
+//   } else {
+//     if (kDebugMode) {
+//       print('This is not the first launch. Database was not cleared.');
+//     }
+//   }
+// }
+// Future<void> _logOut() async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   // Clear the user ID or any other relevant data from SharedPreferences
+//   prefs.remove('userId');
+//   prefs.remove('userCitys');
+//   prefs.remove('userNames');
+//   prefs.remove('userDesignation');
+//   prefs.remove('userBrand');
+//   if (kDebugMode) {
+//     print('Previous SharedPreferences cleared.');
+//   }
+//   // Add any additional logout logic here
+// }
 
-  if (isFirstLaunch) {
-    io.Directory documentDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentDirectory.path, 'valorTrading.db');
-
-    if (await io.File(path).exists()) {
-      // await deleteDatabase(path);
-      await _logOut();
-      if (kDebugMode) {
-        print('Previous database cleared.');
-      }
-    } else {
-      if (kDebugMode) {
-        print('No previous database found to clear.');
-      }
-    }
-
-    await prefs.setBool('isFirstLaunch', false);
-  } else {
-    if (kDebugMode) {
-      print('This is not the first launch. Database was not cleared.');
-    }
-  }
-}
-Future<void> _logOut() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  // Clear the user ID or any other relevant data from SharedPreferences
-  prefs.remove('userId');
-  prefs.remove('userCitys');
-  prefs.remove('userNames');
-  prefs.remove('userDesignation');
-  prefs.remove('userBrand');
-  if (kDebugMode) {
-    print('Previous SharedPreferences cleared.');
-  }
-  // Add any additional logout logic here
-}
 void callbackDispatcher(){
   Workmanager().executeTask((task, inputData) async {
     if (kDebugMode) {
@@ -204,6 +184,7 @@ Future<void> deleteDatabaseFile() async {
   String path = join(documentDirectory.path, 'valorTrading.db');
   await deleteDatabase(path);
 }
+
 Future<void> initializeServiceLocation() async {
   final service = FlutterBackgroundService();
 
@@ -263,7 +244,9 @@ void monitorInternetConnection() {
 Future<bool> isInternetAvailable() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
 
-  if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+  if (
+  connectivityResult == ConnectivityResult.mobile ||
+      connectivityResult == ConnectivityResult.wifi) {
     try {
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
@@ -297,7 +280,6 @@ Future<bool> isInternetAvailable() async {
 @pragma('vm:entry-point')
 void onStart1(ServiceInstance service1) async {
   DartPluginRegistrant.ensureInitialized();
-
   Timer.periodic(const Duration(minutes: 10), (timer) async {
     if (service1 is AndroidServiceInstance) {
       if (await service1.isForegroundService()) {
@@ -306,17 +288,14 @@ void onStart1(ServiceInstance service1) async {
     }
     final deviceInfo = DeviceInfoPlugin();
     String? device1;
-
     if (Platform.isAndroid) {
       final androidInfo = await deviceInfo.androidInfo;
       device1 = androidInfo.model;
     }
-
     if (Platform.isIOS) {
       final iosInfo = await deviceInfo.iosInfo;
       device1 = iosInfo.model;
     }
-
     service1.invoke(
       'update',
       {
@@ -480,19 +459,13 @@ backgroundTask() async {
     bool isConnected = await isInternetAvailable();
     DatabaseOutputs outputs = DatabaseOutputs();
     if (isConnected) {
-      if (kDebugMode) {
-        print('Internet connection is available. Initiating background data synchronization.');
-      }
+
       await synchronizeData();
       // await outputs.initializeDatalogin();
 
-      if (kDebugMode) {
-        print('Background data synchronization completed.');
-      }
+
     } else {
-      if (kDebugMode) {
-        print('No internet connection available. Skipping background data synchronization.');
-      }
+
     }
   } catch (e) {
     if (kDebugMode) {
@@ -524,34 +497,27 @@ Future<void> postLocationData() async {
 Future<void> postShopVisitData() async {
   await shopisitViewModel.postShopVisit();
 }
-
 Future<void> postStockCheckItems() async {
   await stockcheckitemsViewModel.postStockCheckItems();
 }
-
 Future<void> postAttendanceOutTable() async {
   await attendanceViewModel.postAttendanceOut();
 }
-
 Future<void> postAttendanceTable() async {
   await attendanceViewModel.postAttendance();
 
 }
-
 Future<void> postMasterTable() async {
   await ordermasterViewModel.postOrderMaster();
 
 }
-
 Future<void> postOrderDetails() async {
   await orderdetailsViewModel.postOrderDetails();
 
 }
-
 Future<void> postShopTable() async {
   await shopViewModel.postShop();
 }
-
 Future<void> postReturnFormTable() async {
   if (kDebugMode) {
     print('Attempting to post Return data');
@@ -562,12 +528,10 @@ Future<void> postReturnFormTable() async {
     print('Return data posted successfully');
   }
 }
-
 Future<void> postReturnFormDetails() async {
 
   await returnformdetailsViewModel.postReturnFormDetails();
 }
-
 Future<void> postRecoveryFormTable() async {
   await recoveryformViewModel.postRecoveryForm();
 

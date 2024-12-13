@@ -34,46 +34,46 @@ import 'FinalOrderBookingPage.dart';
 
 
 class ShopImageController extends GetxController {
+  // Observable to store the shop image file
   final Rx<File?> _shopimageFile = Rx<File?>(null);
 
+  // Getter to retrieve the current shop image file
   File? get shopImageFile => _shopimageFile.value;
 
+  // Method to update the shop image file
   void updateShopImageFile(File? file) {
     _shopimageFile.value = file;
   }
+
+  // Method to load an image file from a base64 string
   Future<void> loadImageFile(String base64Image) async {
+    // Decode the base64 string into bytes
     Uint8List bytesImage = base64Decode(base64Image);
-    // await Future.delayed(const Duration(seconds: 5));
 
     final tempDir = await getTemporaryDirectory();
     final file = await File('${tempDir.path}/image.jpg').writeAsBytes(bytesImage);
-    // await Future.delayed(const Duration(seconds: 2));
 
     // Update the _shopimageFile value using the controller
+    updateShopImageFile(file); // Directly call the method
 
-    updateShopImageFile(file); // directly call the method
-
-    update();
+    update(); // Notify listeners to update the UI
 
     if (kDebugMode) {
       print('Shop Image File: ${_shopimageFile.value}');
       print('Shop Image File: $_shopimageFile');
     }
   }
+
+  // Method to clear the shop image file
   void clearShopImageFile() {
     _shopimageFile.value = null;
   }
 }
 
-
 class ShopVisit extends StatefulWidget {
-
-// Add this line
-
+  // Constructor for ShopVisit widget
   const ShopVisit({
     Key? key,
-
-
   }) : super(key: key);
 
   @override
@@ -82,17 +82,15 @@ class ShopVisit extends StatefulWidget {
 
 class ShopVisitState extends State<ShopVisit> {
   final shopImageFileProvider = StateProvider<File?>((ref) => null);
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  //final productsViewModel = Get.put(ProductsViewModel());
+  // Text controllers for the form fields
   TextEditingController ShopNameController = TextEditingController();
   final TextEditingController _brandDropDownController = TextEditingController();
   TextEditingController BookerNameController = TextEditingController();
   TextEditingController BrandNameController = TextEditingController();
   TextEditingController ShopAddressController = TextEditingController();
   TextEditingController ShopOwnerController = TextEditingController();
-  final  ownerViewModel = Get.put(OwnerViewModel());
-
+  final ownerViewModel = Get.put(OwnerViewModel());
 
   final ShopImageController _shopImageController = Get.put(ShopImageController());
   final Rx<File?> shopimageFile = Rx<File?>(null); // Use Rx to manage File state
@@ -121,27 +119,21 @@ class ShopVisitState extends State<ShopVisit> {
   List<String> selectedProductNames = [];
   // Add an instance of ProductsViewModel
   ProductsViewModel productsViewModel = Get.put(ProductsViewModel());
-  // String? latestOrderNo =  dbHelper.getLatestOrderNo(userId);
-  int ShopVisitsSerialCounter = highestSerial ?? 0;
+   int ShopVisitsSerialCounter = highestSerial ?? 0;
   late ValueNotifier<String> shopNameNotifier;
-  // int? serialCounter;
 
   double currentBalance = 0.0;
   String currentUserId = '';
   String shopVisitCurruntMonth = DateFormat('MMM').format(DateTime.now());
   get shopData => null;
-  // List<StockCheckItem> stockCheckItems = [StockCheckItem()];
   int serialNo = 1;
   final shopVisitViewModel = Get.put(ShopVisitViewModel());
-  //final stockcheckitemsViewModel =Get.put(StockCheckItemsViewModel());
   final ImagePicker _imagePicker = ImagePicker();
   File? _imageFile;
-  // File? _shopimageFile;
   bool checkboxValue1 = false;
   bool checkboxValue2 = false;
   bool checkboxValue3 = false;
   bool checkboxValue4 = false;
- // String feedbackController = '';
   final TextEditingController feedbackController = TextEditingController();
   final FocusNode feedbackFocusNode = FocusNode();
   bool isButtonPressed3 = false;
@@ -152,7 +144,8 @@ class ShopVisitState extends State<ShopVisit> {
   bool showLoading = false;
   List<DataRow> rows = [];
   final FocusNode _shopNameFocusNode = FocusNode();
-  // Uint8List? _imageBytes;
+
+  // Function to filter data based on query
   void filterData(String query) {
     if (query.isEmpty) {
       setState(() {
@@ -160,7 +153,7 @@ class ShopVisitState extends State<ShopVisit> {
       });
     } else {
       List<DataRow> tempList = [];
-      String  lowerCaseQuery =query.toLowerCase();
+      String lowerCaseQuery = query.toLowerCase();
       for (DataRow row in productsController.rows) {
         for (DataCell cell in row.cells) {
           if (cell.child is Text && (cell.child as Text).data!.toLowerCase().contains(lowerCaseQuery)) {
@@ -174,73 +167,83 @@ class ShopVisitState extends State<ShopVisit> {
       });
     }
   }
+
+  // Function to navigate to the new order booking page with the selected brand name
   void navigateToNewOrderBookingPage(String selectedBrandName) async {
     // Set the selected shop name without navigation
     setState(() {
       selectedItem = selectedBrandName;
     });
   }
+
+
   @override
   void initState() {
-
     super.initState();
+
+    // Check user ID and fetch shop names
     _checkUserIdAndFetchShopNames();
+    // Retrieve initial data
     data();
+
+    // Clear the brand name controller
     BrandNameController.clear();
-    // BrandNameController.dispose();
-    // serialCounter=(dbHelper.getLatestSerialNo(userId) as int?)!;
-  shopNameNotifier = ValueNotifier<String>(selectedItem);
-  productsController.rows;
 
+    // Initialize shop name notifier with selected item
+    shopNameNotifier = ValueNotifier<String>(selectedItem);
+    productsController.rows;
 
-    //selectedDropdownValue = dropdownItems[0]; // Default value
+    // Fetch brand items from the database
     _fetchBrandItemsFromDatabase();
-    //fetchShopData();
-
+    // Initialize other setup
     onCreatee();
     _loadCounter();
-    //  _saveCounter();
-    //fetchProductsNamesByBrand();
+
+    // Save current location
     saveCurrentLocation();
 
+    // Add listener to shop name notifier to update the shop image
     shopNameNotifier.addListener(() {
       updateShopImage();
       if (kDebugMode) {
         print('shopNameNotifier value changed to: ${shopNameNotifier.value}');
       }
     });
+
+    // Add another listener to handle product changes
     shopNameNotifier.addListener(() {
       _onProductChange();
       if (kDebugMode) {
         print('State changed ');
-      }});
-    // Add listener to FocusNode
+      }
+    });
+
+    // Add listener to focus node to clear shop name when focused
     _shopNameFocusNode.addListener(() {
       if (_shopNameFocusNode.hasFocus) {
         _shopImageController.clearShopImageFile();
         ShopNameController.clear();
       }
     });
-   // _shopimageFile.value;
-   //  _shopImageController._shopimageFile;
-    // productsController.controllers.clear();
-    // removeSavedValues(index);
+
     if (kDebugMode) {
       print(userId);
       print(highestSerial);
     }
   }
-  data(){
+
+// Function to retrieve initial data from the database
+  void data() {
     DBHelper dbHelper = DBHelper();
     if (kDebugMode) {
       print('data0');
     }
     dbHelper.getHighestSerialNo();
   }
+
+// Function to remove saved values from SharedPreferences
   Future<void> removeSavedValues(int index) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    // Remove itemDesc and qty from SharedPreferences
     await prefs.remove('itemDesc$index');
     await prefs.remove('qty$index');
 
@@ -249,32 +252,17 @@ class ShopVisitState extends State<ShopVisit> {
     }
   }
 
-
-  // Future<void> _checkUserIdAndFetchShopNames() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? userDesignation = prefs.getString('userDesignation');
-  //
-  //   if (userDesignation != 'ASM' && userDesignation != 'SPO'  && userDesignation != 'SOS') {
-  //     await fetchShopNames();
-  //   //  shopOwners = (await dbHelper.getOwnersDB())!;
-  //
-  //   } else {
-  //     await fetchShopNamesAll();
-  //     // shopOwners = (await dbHelper.getOwnersDB())!;
-  //
-  //   }
-  // }
-
+// Function to check user ID and fetch shop names
   Future<void> _checkUserIdAndFetchShopNames() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userDesignation = prefs.getString('userDesignation');
 
-    var boxName = (userDesignation == 'RSM' || userDesignation == 'NSM' ||userDesignation == 'SM' || userDesignation == 'ASM' || userDesignation == 'SPO' || userDesignation == 'SOS')
+    var boxName = (userDesignation == 'RSM' || userDesignation == 'NSM' || userDesignation == 'SM' || userDesignation == 'ASM' || userDesignation == 'SPO' || userDesignation == 'SOS')
         ? 'shopNames'
         : 'shopNamesByCities';
     var box = await Hive.openBox(boxName);
 
-   cachedShopNames = box.get(boxName) as List<String>?;
+    cachedShopNames = box.get(boxName) as List<String>?;
     await box.close();
 
     if (cachedShopNames != null && cachedShopNames!.isNotEmpty) {
@@ -290,13 +278,11 @@ class ShopVisitState extends State<ShopVisit> {
     }
   }
 
+// Function to fetch shop names by cities from the database
   Future<void> fetchShopNames() async {
-    // Fetch shop names from database
     ownerViewModel.fetchShopNamesbycities();
-    List<String> shopNames =  ownerViewModel.shopNamesbycites.map((dynamic item) => item.toString()).toSet().toList(); // Example: Replace with actual fetch from your database
-    //shopOwners = (await dbHelper.getOwnersDB())!;// Example: Replace with actual fetch from your database
+    List<String> shopNames = ownerViewModel.shopNamesbycites.map((dynamic item) => item.toString()).toSet().toList();
 
-    // Save shop names to Hive
     var box = await Hive.openBox('shopNamesByCities');
     await box.put('shopNamesByCities', shopNames);
     List<String> shopNamesByCities = box.get('shopNamesByCities', defaultValue: <String>[]);
@@ -309,56 +295,38 @@ class ShopVisitState extends State<ShopVisit> {
       dropdownItems = shopNames.map((dynamic item) => item.toString()).toSet().toList();
     });
   }
-  //
-  // Future<void> fetchShopNames() async {
-  //
-  //   ownerViewModel.fetchShopNamesbycities();
-  //  shopOwners = (await dbHelper.getOwnersDB())!;
-  //   setState(() {
-  //     // Explicitly cast each element to String
-  //     dropdownItems = ownerViewModel.shopNamesbycites.map((dynamic item) => item.toString()).toSet().toList();
-  //   });
-  // }
 
+// Function to fetch all shop names from the database
   Future<void> fetchShopNamesAll() async {
-    // Fetch shop names from database
-     ownerViewModel.fetchShopNames();// Example: Replace with actual fetch from your database
-     List<String> shopNames =  ownerViewModel.shopNames.map((dynamic item) => item.toString()).toSet().toList();
-     //shopOwners = (await dbHelper.getOwnersDB())!;
-    // Save shop names to Hive
-     var box = await Hive.openBox('shopNames');
-     await box.put('shopNames', shopNames);
-     List<String> allShopNames = box.get('shopNames', defaultValue: <String>[]);
-     if (kDebugMode) {
-       print('All shop names: $allShopNames');
-     }
-     await box.close();
+    ownerViewModel.fetchShopNames();
+    List<String> shopNames = ownerViewModel.shopNames.map((dynamic item) => item.toString()).toSet().toList();
+
+    var box = await Hive.openBox('shopNames');
+    await box.put('shopNames', shopNames);
+    List<String> allShopNames = box.get('shopNames', defaultValue: <String>[]);
+    if (kDebugMode) {
+      print('All shop names: $allShopNames');
+    }
+    await box.close();
 
     setState(() {
       dropdownItems = shopNames.map((dynamic item) => item.toString()).toSet().toList();
-      });
+    });
   }
-  // Future<void> fetchShopNamesAll() async {
-  //
-  //   ownerViewModel.fetchShopNames();
-  //   shopOwners = (await dbHelper.getOwnersDB())!;
-  //   setState(() {
-  //     // Explicitly cast each element to String
-  //     dropdownItems = ownerViewModel.shopNames.map((dynamic item) => item.toString()).toSet().toList();
-  //   });
-  // }
 
+
+// Function to save the current location
   Future<void> saveCurrentLocation() async {
     PermissionStatus permission = await Permission.location.request();
 
     if (permission.isGranted) {
       try {
+        // Get the current position
         Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
         );
-        latitude  = position.latitude ;
-        longitude = position.longitude ;
-
+        latitude  = position.latitude;
+        longitude = position.longitude;
 
         if (kDebugMode) {
           print('Latitude: $latitude, Longitude: $longitude');
@@ -368,6 +336,7 @@ class ShopVisitState extends State<ShopVisit> {
         List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
         Placemark currentPlace = placemarks[0];
 
+        // Construct the address from the placemark
         String address1 = "${currentPlace.thoroughfare} ${currentPlace.subLocality}, ${currentPlace.locality}${currentPlace.postalCode}, ${currentPlace.country}";
         shopAddress = address1;
 
@@ -376,7 +345,7 @@ class ShopVisitState extends State<ShopVisit> {
         }
       } catch (e) {
         if (kDebugMode) {
-          print('Error getting location:$e');
+          print('Error getting location: $e');
         }
       }
     } else {
@@ -386,39 +355,42 @@ class ShopVisitState extends State<ShopVisit> {
     }
   }
 
-  _loadCounter() async {
+// Function to load the serial counter and other state variables from SharedPreferences
+  void _loadCounter() async {
     String currentMonth = DateFormat('MMM').format(DateTime.now());
     if (shopVisitCurruntMonth != currentMonth) {
       // Reset serial counter when the month changes
       ShopVisitsSerialCounter = 1;
       shopVisitCurruntMonth = currentMonth;
     }
-    //serialCounter=highestSerial;
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      //  serialCounter++;
-      ShopVisitsSerialCounter = (prefs.getInt('serialCounter') ?? highestSerial?? 1) ;
+      ShopVisitsSerialCounter = (prefs.getInt('serialCounter') ?? highestSerial ?? 1);
       shopVisitCurruntMonth = prefs.getString('currentMonth') ?? shopVisitCurruntMonth;
       currentUserId = prefs.getString('currentUserId') ?? ''; // Add this line
     });
+
     if (kDebugMode) {
-      print('SR:$ShopVisitsSerialCounter');
+      print('SR: $ShopVisitsSerialCounter');
     }
   }
 
-  _saveCounter() async {
+// Function to save the serial counter and other state variables to SharedPreferences
+  void _saveCounter() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('serialCounter', ShopVisitsSerialCounter);
     await prefs.setString('currentMonth', shopVisitCurruntMonth);
     await prefs.setString('currentUserId', currentUserId); // Add this line
   }
 
-  String generateNewOrderId( String userId) {
+// Function to generate a new order ID
+  String generateNewOrderId(String userId) {
     String currentMonth = DateFormat('MMM').format(DateTime.now());
 
     if (currentUserId != userId) {
       // Reset serial counter when the userId changes
-      ShopVisitsSerialCounter = highestSerial??1;
+      ShopVisitsSerialCounter = highestSerial ?? 1;
       currentUserId = userId;
     }
 
@@ -427,26 +399,22 @@ class ShopVisitState extends State<ShopVisit> {
       ShopVisitsSerialCounter = 1;
       shopVisitCurruntMonth = currentMonth;
     }
-//set state
-    String orderId =
-        "$userId-$currentMonth-${ShopVisitsSerialCounter.toString().padLeft(3, '0')}";
+
+    // Generate the new order ID
+    String orderId = "$userId-$currentMonth-${ShopVisitsSerialCounter.toString().padLeft(3, '0')}";
     ShopVisitsSerialCounter++;
     _saveCounter(); // Save the updated counter value, current month, and userId
     return orderId;
   }
 
-
+// Function to perform database operations on create
   Future<void> onCreatee() async {
     DatabaseOutputs db = DatabaseOutputs();
     await db.showShopVisit();
     await db.showStockCheckItems();
-
-    // DatabaseOutputs outputs = DatabaseOutputs();
-    //  outputs.checkFirstRun();
   }
 
-
-  // Method to fetch brand items from the database.
+// Method to fetch brand items from the database
   void _fetchBrandItemsFromDatabase() async {
     DBHelper dbHelper = DBHelper();
     List<String> brandItems = await dbHelper.getBrandItems();
@@ -454,16 +422,19 @@ class ShopVisitState extends State<ShopVisit> {
     // Remove duplicates from the shopNames list
     List<String> uniqueBrandNames = brandItems.toSet().toList();
 
-    // Set the retrieved brand items in the state.
+    // Set the retrieved brand items in the state
     setState(() {
       brandDropdownItems = uniqueBrandNames;
     });
   }
+
+// Function to save an image
   Future<void> saveImage() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final filePath = '${directory.path}/captured_image.jpg';
 
+      // Compress the image
       Uint8List? compressedImageBytes = await FlutterImageCompress.compressWithFile(
         _imageFile!.path,
         minWidth: 400,
@@ -472,6 +443,7 @@ class ShopVisitState extends State<ShopVisit> {
       );
 
       if (compressedImageBytes != null) {
+        // Save the compressed image
         await File(filePath).writeAsBytes(compressedImageBytes);
         if (kDebugMode) {
           print('Compressed image saved successfully at $filePath');
@@ -495,6 +467,8 @@ class ShopVisitState extends State<ShopVisit> {
   }
 
 
+
+// Widget to build the stack for displaying the shop image
   Widget buildShopImageStack() {
     return ValueListenableBuilder<String>(
       valueListenable: shopNameNotifier,
@@ -524,51 +498,65 @@ class ShopVisitState extends State<ShopVisit> {
                   ),
                 ),
               ),
-
           ],
         ));
       },
     );
   }
+
+// Function to update the shop image based on the selected shop name
   Future<void> updateShopImage() async {
-    shopOwners = (await dbHelper.getOwnersDB())!;// Example: Replace with actual fetch from your database
+    // Fetch shop owners from the database
+    shopOwners = (await dbHelper.getOwnersDB())!;
 
     for (var owner in shopOwners) {
       if (owner['shop_name'] == shopNameNotifier.value) {
         selectedShopOwner = owner['owner_name'];
         selectedOwnerContact = owner['phone_no'];
-        selectedShopCity= owner['city'];
-        selectedShopAddress= owner['shop_address'];
-        ShopAddressController.text = selectedShopAddress ?? 'Not Address';
-        ShopOwnerController.text = selectedShopOwner ?? 'No Owner name';
+        selectedShopCity = owner['city'];
+        selectedShopAddress = owner['shop_address'];
+        ShopAddressController.text = selectedShopAddress ?? 'No Address';
+        ShopOwnerController.text = selectedShopOwner ?? 'No Owner Name';
         String base64Image = owner['images'];
-       await _shopImageController.loadImageFile(base64Image);
-       if (kDebugMode) {
-         print("selectedShopCity:$selectedShopCity");
-       }
 
+        // Load the shop image file from base64
+        await _shopImageController.loadImageFile(base64Image);
+        if (kDebugMode) {
+          print("selectedShopCity: $selectedShopCity");
+        }
 
-       await _onProductChange();
+        // Update the products based on the selected shop
+        await _onProductChange();
+        // Rebuild the shop image stack
         buildShopImageStack();
-
       }
     }
   }
+
+// Function to handle product changes
   Future<void> _onProductChange() async {
     setState(() {}); // Update UI when products change
   }
+
   @override
   void dispose() {
+    // Clear the shop image file
     _shopImageController.clearShopImageFile();
+    // Clear and dispose the brand name controller
     BrandNameController.clear();
     BrandNameController.dispose();
-    ShopNameController.dispose(); // Clear the text in the shop name field
-    _shopNameFocusNode.dispose(); // Dispose the FocusNode
+    // Clear and dispose the shop name controller
+    ShopNameController.dispose();
+    // Dispose the FocusNode
+    _shopNameFocusNode.dispose();
+    // Dispose feedback controllers and focus nodes
     feedbackController.dispose();
     feedbackFocusNode.dispose();
-    _brandDropDownController.text ="";
+    // Clear the brand drop-down controller
+    _brandDropDownController.text = "";
     super.dispose();
   }
+
   @override
 
     Widget build(BuildContext context) {
@@ -1478,18 +1466,18 @@ class StockCheckItem {
   String? selectedDropdownValue;
 }
 
-
 class Products extends GetxController {
   final productsViewModel = ProductsViewModel();
-  List<DataRow> rows = <DataRow>[].obs;
-  List<TextEditingController> controllers = [];
-  ValueNotifier<List<DataRow>> rowsNotifier = ValueNotifier<List<DataRow>>([]);
+  List<DataRow> rows = <DataRow>[].obs;  // Observable list of DataRow
+  List<TextEditingController> controllers = [];  // List of controllers for text fields
+  ValueNotifier<List<DataRow>> rowsNotifier = ValueNotifier<List<DataRow>>([]);  // Notifier for rows
 
   // Method to update rowsNotifier with new rows
   void updateRows(List<DataRow> newRows) {
     rowsNotifier.value = newRows;
   }
 
+  // Method to fetch products based on selected brand
   Future<void> fetchProducts() async {
     await productsViewModel.fetchProductsByBrands(globalselectedbrand);
     var products = productsViewModel.allProducts;
@@ -1499,7 +1487,7 @@ class Products extends GetxController {
     controllers.clear();
 
     for (var product in products) {
-      var controller = TextEditingController(text: '0'); // Set default value here
+      var controller = TextEditingController(text: '0'); // Set default value to '0'
       controllers.add(controller);
 
       FocusNode focusNode = FocusNode();
@@ -1519,7 +1507,7 @@ class Products extends GetxController {
       });
 
       rows.add(DataRow(cells: [
-        DataCell(Text(product.product_name ?? '')),
+        DataCell(Text(product.product_name ?? '')),  // Display product name
         DataCell(TextField(
           controller: controller,
           focusNode: focusNode,
@@ -1542,3 +1530,4 @@ class Products extends GetxController {
     updateRows(List<DataRow>.from(rows));
   }
 }
+

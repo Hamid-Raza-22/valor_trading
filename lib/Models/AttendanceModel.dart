@@ -10,7 +10,6 @@ class AttendanceModel {
  dynamic city;
  dynamic address;
 
-
   AttendanceModel({
     this.id,
     this.date,

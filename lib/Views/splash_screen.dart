@@ -55,19 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             );
             break;
-        // case 'SO':
-        // case 'SPO':
-        // case 'ASM':
-        // case 'SOS':
-        // // Redirect to the HomePage for general designations
-        //   Navigator.of(context).push(
-        //     MaterialPageRoute(
-        //       builder: (context) => const HomePage(),
-        //     ),
-        //   );
-        //   break;
           default:
-
           // Handle cases where designation does not match any of the above
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -97,9 +85,15 @@ class _SplashScreenState extends State<SplashScreen> {
     String? userRSM = prefs.getString('userRSM');
     String? userSM = prefs.getString('userSM');
     String? userNSM = prefs.getString('userNSM');
-    return userRSM != null && userRSM.isNotEmpty && userSM != null && userSM.isNotEmpty && userNSM != null && userNSM.isNotEmpty &&userId != null && userId.isNotEmpty && userCitys!=null && userCitys.isNotEmpty && userNames!=null && userNames.isNotEmpty && userDesignation!=null && userDesignation.isNotEmpty;
+    return userRSM != null &&
+        userRSM.isNotEmpty && userSM != null &&
+        userSM.isNotEmpty && userNSM != null &&
+        userNSM.isNotEmpty &&userId != null &&
+        userId.isNotEmpty && userCitys!=null &&
+        userCitys.isNotEmpty && userNames!=null &&
+        userNames.isNotEmpty && userDesignation!=null &&
+        userDesignation.isNotEmpty;
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

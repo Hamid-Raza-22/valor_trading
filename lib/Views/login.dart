@@ -34,18 +34,21 @@ class LoginForm extends StatefulWidget {
 class LoginFormState extends State<LoginForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  // Controllers for email and password input fields
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoading = false;
   int _loadingProgress = 0;
-  final  ownerViewModel = Get.put(OwnerViewModel());
+  final ownerViewModel = Get.put(OwnerViewModel());
+
   @override
   void initState() {
     super.initState();
     _requestPermissions();
   }
 
+  // Function to request necessary permissions
   Future<void> _requestPermissions() async {
     // Request notification permission
     if (await Permission.notification.request().isDenied) {
@@ -60,9 +63,10 @@ class LoginFormState extends State<LoginForm> {
       SystemChannels.platform.invokeMethod('SystemNavigator.pop');
     }
   }
-
+//instance of DBHelper
   final dblogin = DBHelper();
 
+  // Function to handle login action
   Future<void> _handleLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       Fluttertoast.showToast(
@@ -75,15 +79,12 @@ class LoginFormState extends State<LoginForm> {
       );
       return; // Exit the method if either field is empty
     }
-
     setState(() {
       _isLoading = true; // Set loading to true when button is pressed
       _loadingProgress = 0; // Reset progress
     });
-
     bool isConnected = await isInternetAvailable();
     if (isConnected) {
-
       await _login();
     } else {
       Fluttertoast.showToast(
@@ -95,15 +96,13 @@ class LoginFormState extends State<LoginForm> {
         fontSize: 16.0,
       );
     }
-
     setState(() {
       _isLoading = false; // Set loading to false after login function is complete
     });
   }
 
+  // Function to perform login
   Future<void> _login() async {
-
-
     var response = await dblogin.login(
       LoginModel(user_id: _emailController.text, password: _passwordController.text, user_name: ''),
     );
@@ -132,7 +131,7 @@ class LoginFormState extends State<LoginForm> {
         await prefs.setString('userCitys', userCity);
         await prefs.setString('userDesignation', designation);
         await prefs.setString('userBrand', brand);
-        await  prefs.setString('userRSM', userRSM);
+        await prefs.setString('userRSM', userRSM);
         await prefs.setString('userSM', userSM);
         await prefs.setString('userNSM', userNSM);
 
@@ -153,6 +152,8 @@ class LoginFormState extends State<LoginForm> {
       }
     }
   }
+
+// Function to retrieve saved login values from SharedPreferences
   _loginRetrieveSavedValues() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -163,22 +164,23 @@ class LoginFormState extends State<LoginForm> {
       userBrand = prefs.getString('userBrand') ?? '';
       userSM = prefs.getString('userSM') ?? '';
       userNSM = prefs.getString('userNSM') ?? '';
-      userRSM= prefs.getString('userRSM') ?? '';
+      userRSM = prefs.getString('userRSM') ?? '';
     });
   }
+
+// Function to initialize data by fetching and storing necessary information
   Future<void> initializeData() async {
     final api = ApiServices();
     final db = DBHelper();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? id = prefs.getString('userId');
     String? brand = prefs.getString('userBrand');
-    // DateTime now = DateTime.now();
-    // String formattedDateTime = DateFormat('dd-MMM-yyyy-HH:mm:ss').format(now);
-    // await prefs.setString('lastInitializationDateTime', formattedDateTime);
 
     setState(() {
-      _loadingProgress = 05;
+      _loadingProgress = 5;
     });
+
+    // Fetch various types of data and update loading progress accordingly
     await fetchOwnerData(api, db);
     setState(() {
       _loadingProgress = 10;
@@ -192,64 +194,57 @@ class LoginFormState extends State<LoginForm> {
       _loadingProgress = 20;
     });
     await fetchOwnerData3(api, db);
-
     setState(() {
       _loadingProgress = 25;
     });
     await fetchNetBalanceData(api, db, id);
-
     setState(() {
       _loadingProgress = 30;
     });
     await fetchRecoveryFormData(api, db, id);
-
     setState(() {
       _loadingProgress = 40;
     });
     await fetchProductCategoryData(api, db, id);
-
     setState(() {
       _loadingProgress = 50;
     });
     await fetchPakCitiesData(api, db);
-
     setState(() {
       _loadingProgress = 60;
     });
     await fetchOrderDetailsData(api, db, id);
-
     setState(() {
       _loadingProgress = 70;
     });
     await fetchOrderMasterData(api, db, id);
-
     setState(() {
       _loadingProgress = 80;
     });
     await fetchProductsData(api, db, brand);
-
     setState(() {
       _loadingProgress = 90;
     });
     await fetchAccountsData(api, db, id);
-
     setState(() {
       _loadingProgress = 100;
     });
     await fetchOrderBookingStatusData(api, db, id);
+
+    // Retrieve saved values after initialization
     await _loginRetrieveSavedValues();
+
     bool isLoggedIn = await _checkLoginStatus();
     if (isLoggedIn) {
       Map<String, dynamic> dataToPass = {
         'userName': userNames,
       };
-
       if (kDebugMode) {
         print('Navigating to homepage for designation: $userDesignation');
       }
 
+      // Navigate to appropriate homepage based on user designation
       switch (userDesignation) {
-
         case 'RSM':
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -257,7 +252,6 @@ class LoginFormState extends State<LoginForm> {
             ),
           );
           break;
-
         case 'SM':
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -265,7 +259,6 @@ class LoginFormState extends State<LoginForm> {
             ),
           );
           break;
-
         case 'NSM':
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -273,7 +266,6 @@ class LoginFormState extends State<LoginForm> {
             ),
           );
           break;
-
         default:
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -283,17 +275,20 @@ class LoginFormState extends State<LoginForm> {
           );
           break;
       }
-
-      // return;
     }
   }
 
 
+// Function to fetch accounts data from the API and insert it into the database
   Future<void> fetchAccountsData(ApiServices api, DBHelper db, String? id) async {
+    // Retrieve accounts data from the database
     var accountsdata = await db.getAccoutsDB();
+
+    // Check if accounts data is null or empty
     if (accountsdata == null || accountsdata.isEmpty) {
       bool inserted = false;
       try {
+        // Fetch accounts data using the first API
         var response = await api.getApi("$accountApi$id");
         inserted = await db.insertAccountsData(response);
         if (inserted) {
@@ -308,6 +303,7 @@ class LoginFormState extends State<LoginForm> {
           print("Error with first API. Trying second API.");
         }
         try {
+          // Fetch accounts data using the second API as a fallback
           var response = await api.getApi("https://apex.oracle.com/pls/apex/metaxpertss/accounts/get/$id");
           inserted = await db.insertAccountsData(response);
           if (inserted) {
@@ -331,6 +327,7 @@ class LoginFormState extends State<LoginForm> {
       }
     }
   }
+
 
   Future<void> fetchNetBalanceData(ApiServices api, DBHelper db, String? id) async {
     var netBalancedata = await db.getNetBalanceDB();
@@ -824,6 +821,7 @@ class LoginFormState extends State<LoginForm> {
     }
   }
 
+// Function to check the login status by retrieving values from SharedPreferences
   Future<bool> _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
@@ -835,6 +833,7 @@ class LoginFormState extends State<LoginForm> {
     String? userSM = prefs.getString('userSM');
     String? userNSM = prefs.getString('userNSM');
 
+    // Check if all required user details are available and non-empty
     return userId != null && userId.isNotEmpty &&
         userNames != null && userNames.isNotEmpty &&
         userCitys != null && userCitys.isNotEmpty &&
@@ -844,69 +843,7 @@ class LoginFormState extends State<LoginForm> {
         userRSM != null && userRSM.isNotEmpty &&
         userNSM != null && userNSM.isNotEmpty;
   }
-  // Future<void> checkUserIdAndFetchShopNames() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? userDesignation = prefs.getString('userDesignation');
-  //
-  //   if (userDesignation == 'ASM' || userDesignation == 'SPO' ||
-  //       userDesignation == 'SOS') {
-  //     await fetchShopNamesAll();
-  //   } else {
-  //     await fetchShopNames();
-  //   }
-  // }
-  //
-  // Future<void> fetchShopNames() async {
-  //   // Fetch shop names from database
-  //  await ownerViewModel.fetchShopNamesbycities();
-  //   List<String> shopNames = ownerViewModel.shopNamesbycites
-  //       .map((dynamic item) => item.toString())
-  //       .toSet()
-  //       .toList(); // Ensure data is unique and converted to a list of strings
-  //   //shopOwners = (await dbHelper.getOwnersDB())!;// Example: Replace with actual fetch from your database
-  //   // Save shop names to Hive
-  //   var box = await Hive.openBox('shopNamesByCities');
-  //   await box.put('shopNamesByCities', shopNames);
-  //   List<String> shopNamesByCities = box.get('shopNamesByCities', defaultValue: <String>[]);
-  //   if (kDebugMode) {
-  //     print('Shop names by cities: $shopNamesByCities');
-  //   }
-  //   await box.close();
-  // }
-  //
-  // Future<void> fetchShopNamesAll() async {
-  //   // Fetch shop names from database
-  //  await ownerViewModel.fetchShopNames();// Example: Replace with actual fetch from your database
-  //   List<String> shopNames = ownerViewModel.shopNames
-  //       .map((dynamic item) => item.toString())
-  //       .toSet()
-  //       .toList(); // Ensure data is unique and converted to a list of strings
-  //   //shopOwners = (await dbHelper.getOwnersDB())!;
-  //   // Save shop names to Hive
-  //   var box = await Hive.openBox('shopNames');
-  //   await box.put('shopNames', shopNames);
-  //   List<String> allShopNames = box.get('shopNames', defaultValue: <String>[]);
-  //   if (kDebugMode) {
-  //     print('All shop names: $allShopNames');
-  //   }
-  //   await box.close();
-  //
-  // }
-  // Future<void> checkStoredData() async {
-  //   var box = await Hive.openBox('shopNamesByCities');
-  //   List<String> shopNamesByCities = box.get('shopNamesByCities', defaultValue: <String>[]);
-  //   if (kDebugMode) {
-  //     print('Shop names by cities: $shopNamesByCities');
-  //   }
-  //   await box.close();
-  //
-  //   box = await Hive.openBox('shopNames');
-  //   List<String> shopNames = box.get('shopNames', defaultValue: <String>[]);
-  //   if (kDebugMode) {
-  //     print('All shop names: $shopNames');
-  //   }
-  //   await box.close();
-  // }
+
 
 
   @override
@@ -934,7 +871,7 @@ class LoginFormState extends State<LoginForm> {
                       const SizedBox(height: 0.0),
                       const Center(
                         child: Text(
-                          'Login',
+                          'Login Button',
                           style: TextStyle(
                             color: Color(0xFF212529),
                             fontSize: 24,

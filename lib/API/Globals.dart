@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../Databases/DBHelper.dart';
 import '../main.dart';
 class PostingStatus {
   static final ValueNotifier<bool> isPosting = ValueNotifier<bool>(false);
 }
-
 DBHelper dbHelper = DBHelper();
 String currentPostId= "";
 bool _isPosting = false;
@@ -52,10 +49,7 @@ dynamic shopAddress = "";
 bool locationbool = true;
 //dynamic serialCounter ='';
 String globalcurrentMonth= DateFormat('MMM').format(DateTime.now());
-
 List<String>? cachedShopNames =[];
-
-
 Future<void> checkAndSetInitializationDateTime() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -83,7 +77,6 @@ Future<bool> isInternetConnected() async {
   }
   return isConnected;
 }
-
 Future<void> headsBackgroundTask() async {
   try {
     bool isConnected = await isInternetConnected();
@@ -107,7 +100,6 @@ Future<void> headsBackgroundTask() async {
     }
   }
 }
-
 Future<void> synchronizeData() async {
   if (kDebugMode) {
     print('Synchronizing data in the background.');

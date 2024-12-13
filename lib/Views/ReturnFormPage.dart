@@ -26,23 +26,23 @@ import 'HomePage.dart';
 class ProductController extends GetxController {
   final DBHelper dbHelper = DBHelper();
 
+  // Observable list to store product names
   RxList<String> productNames = <String>[].obs;
 
+  // Function to fetch product data for a specific shop
   Future<void> fetchProductData(String shopName) async {
     List<String> names = await dbHelper.getOrderDetailsProductNames();
-    productNames.assignAll(names);
+    productNames.assignAll(names); // Assign fetched product names to observable list
   }
 }
 
+// Custom TextEditingController with additional functionality
 class TypeAheadController extends TextEditingController {
+  // Flag to check if the selection is from suggestions
   bool isSelectionFromSuggestion = false;
 }
 
-void main() {
-  runApp(const MaterialApp(
-    home: ReturnFormPage(),
-  ));
-}
+
 
 class ReturnFormPage extends StatefulWidget {
   const ReturnFormPage({super.key});
@@ -78,27 +78,7 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
   DBHelper dbreturnform = DBHelper();
   final ProductController productController = Get.put(ProductController());
   final ProductController productController1 = Get.put(ProductController());
-  // Future<void> fetchShopNamesAndTotals() async {
-  //   DBHelper dbHelper = DBHelper();
-  //
-  //   // Calculate total debits, credits, and debits minus credits per shop
-  //   Map<String, dynamic> debitsAndCredits = await dbHelper.getDebitsAndCreditsTotal();
-  //   Map<String, double> debitsMinusCreditsPerShop = await dbHelper.getDebitsMinusCreditsPerShop();
-  //
-  //   // Extract shop names, debits, credits, and debits minus credits per shop
-  //   List<String> shopNames = debitsAndCredits['debits'].keys.toList();
-  //   Map<String, double> shopDebits = debitsAndCredits['debits'];
-  //   Map<String, double> shopCredits = debitsAndCredits['credits'];
-  //
-  //   // Print or use the shop names, debits, credits, and debits minus credits per shop as needed
-  //   if (kDebugMode) {
-  //     print("Shop Names: $shopNames");
-  //     print("Shop Debits: $shopDebits");
-  //     print("Shop Credits: $shopCredits");
-  //     print("Shop Debits - Credits: $debitsMinusCreditsPerShop");
-  //   }
-  //   // You can update the state or perform other actions with the data here
-  // }
+
 
   bool isValidQuantity(String quantity) {
     try {
@@ -171,10 +151,11 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
 
     return totalAmount;
   }
-
+// Function to calculate net balance based on the entered amount
   Future<void> netbalance() async {
     double? amount = double.tryParse(amountController.text);
     if (amount != null) {
+      // Adjust the net balance logic as required
       amountControllerNetBalance = (globalnetBalance! >= amount) ? 0.0 : 0.0;
     } else {
       if (kDebugMode) {
@@ -182,6 +163,8 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
       }
     }
   }
+
+// Function to show a loading indicator
   void showLoadingIndicator(BuildContext context) {
     showDialog(
       context: context,
@@ -200,8 +183,8 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
     );
   }
 
-  Future<void> updateQuantityField(String selectedProductName,
-      int index) async {
+// Function to update the quantity field for a selected product
+  Future<void> updateQuantityField(String selectedProductName, int index) async {
     String? quantity = await fetchQuantityForProduct(selectedProductName);
     if (quantity != null) {
       setState(() {
@@ -209,8 +192,9 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
       });
     }
   }
-  Future<void> updatePriceField(String selectedProductName,
-      int index) async {
+
+// Function to update the price field for a selected product
+  Future<void> updatePriceField(String selectedProductName, int index) async {
     String? price = await fetchPriceForProduct(selectedProductName);
     if (price != null) {
       setState(() {
@@ -219,6 +203,7 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
     }
   }
 
+// Function to fetch product data for a selected shop
   void fetchProductDataForSelectedShop(String selectedShopName) async {
     await productController.fetchProductData(selectedShopName);
     setState(() {
@@ -234,6 +219,8 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
       dynamicRows.add(buildTypeAheadRow(0));
     });
   }
+
+// Function to fetch shop data
   void fetchShopData() async {
     List<String> shopNames = await dbHelper.getOrderMasterShopNames();
     shopOwners = (await dbHelper.getOrderBookingStatusDB())!;
@@ -242,6 +229,7 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
     });
   }
 
+// Function to get the order number for the selected shop
   String getOrderNoForSelectedShop() {
     String selectedShopName = _selectedShopController.text;
     for (var shop in shopOwners) {
@@ -251,6 +239,8 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
     }
     return '';
   }
+
+// Function to print the order number for the selected shop
   void printOrderNoForSelectedShop() {
     String orderNo = getOrderNoForSelectedShop();
     if (kDebugMode) {
@@ -258,11 +248,13 @@ class _ReturnFormPageState extends State<ReturnFormPage> {
     }
   }
 
+// Function to perform additional database operations on create
   Future<void> onCreatee() async {
     DatabaseOutputs db = DatabaseOutputs();
     await db.showOrderDetailsData();
     //await db.showOrderDispacthed();
   }
+
 
   @override
   Widget build(BuildContext context) {

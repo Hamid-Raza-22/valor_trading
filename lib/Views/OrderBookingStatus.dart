@@ -30,30 +30,31 @@ class OrderBookingStatus extends StatefulWidget {
 }
 
 class OrderBookingStatusState extends State<OrderBookingStatus> {
+  // Controllers for text input fields
   TextEditingController shopController = TextEditingController();
   TextEditingController orderController = TextEditingController();
   TextEditingController startDateController = TextEditingController();
   TextEditingController endDateController = TextEditingController();
   TextEditingController statusController = TextEditingController();
   TextEditingController totalAmountController = TextEditingController();
-  List<String> dropdownItems = [];
-  String selectedItem = '';
-  String selectedOrderNo = '';
-  List<String> dropdownItems2 = [];
-  String selectedShopOwner = '';
-  String selectedOwnerContact = '';
-  List<Map<String, dynamic>> shopOwners = [];
-  DBHelper dbHelper = DBHelper();
-  DBHelper dbHelper1 = DBHelper();
 
-  //DBOrderMasterGet dbHelper1 = DBOrderMasterGet();
+  List<String> dropdownItems = []; // List for shop names
+  String selectedItem = ''; // Selected shop name
+  String selectedOrderNo = ''; // Selected order number
+  List<String> dropdownItems2 = []; // List for order numbers
+  String selectedShopOwner = ''; // Selected shop owner
+  String selectedOwnerContact = ''; // Selected owner contact
+  List<Map<String, dynamic>> shopOwners = []; // List for shop owners
 
-  String selectedOrderNoFilter = '';
-  String selectedShopFilter = '';
-  String selectedStatusFilter = '';
+  DBHelper dbHelper = DBHelper(); // Database helper for shops
+  DBHelper dbHelper1 = DBHelper(); // Database helper for orders
 
-  Future<void> _selectDate(BuildContext context,
-      TextEditingController dateController) async {
+  String selectedOrderNoFilter = ''; // Filter for selected order number
+  String selectedShopFilter = ''; // Filter for selected shop
+  String selectedStatusFilter = ''; // Filter for selected status
+
+  // Function to select a date using a date picker
+  Future<void> _selectDate(BuildContext context, TextEditingController dateController) async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -70,29 +71,20 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
   @override
   void initState() {
     super.initState();
-    fetchShopData();
-    fetchOrderNumbers();
-    onCreatee();
+    fetchShopData(); // Fetch shop data on initialization
+    fetchOrderNumbers(); // Fetch order numbers on initialization
+    onCreatee(); // Perform additional setup
   }
 
-  // Future<void> onCreatee() async {
-  //
-  //   DatabaseOutputs outputs = DatabaseOutputs();
-  //   outputs.checkFirstRun();
-  // }
-
+  // Function to perform additional database operations on create
   Future<void> onCreatee() async {
     DatabaseOutputs db = DatabaseOutputs();
     await db.showOrderDispacthed();
     await db.showOrderMaster();
-    // await db.showOrderDetailsData();
     await db.showOrderDetails();
-
-    // DatabaseOutputs outputs = DatabaseOutputs();
-    // outputs.checkFirstRun();
-
   }
 
+  // Function to clear all filters
   void clearFilters() {
     setState(() {
       selectedShopFilter = '';
@@ -108,16 +100,7 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
     });
   }
 
-  // void fetchOrderNumbers() async {
-  //   List<Map<String, dynamic>> orderNumbers =
-  //       await dbHelper.getOrderBookingStatusDB() ?? [];
-  //   setState(() {
-  //     dropdownItems2 =
-  //         orderNumbers.map((map) => map['order_no'].toString()).toSet().toList();
-  //   });
-  // }
-
-
+  // Function to fetch order numbers
   void fetchOrderNumbers() async {
     List<String> orderNo = await dbHelper1.getOrderMasterOrderNo();
     shopOwners = (await dbHelper1.getOrderMasterDB())!;
@@ -130,8 +113,7 @@ class OrderBookingStatusState extends State<OrderBookingStatus> {
     });
   }
 
-
-  //
+  // Function to fetch shop data
   void fetchShopData() async {
     List<String> shopNames = await dbHelper.getOrderMasterShopNames2();
     shopOwners = (await dbHelper.getOrderMasterDB())!;

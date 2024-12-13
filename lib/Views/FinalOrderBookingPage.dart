@@ -23,24 +23,27 @@ import 'dart:async' show Future;
 
 
 // ...
+
 class Productss extends ChangeNotifier {
   final productsViewModel = ProductsViewModel();
-  List<DataRow> rows = [];
-  List<TextEditingController> quantityControllers = [];
-  final amounts = <ProductsModel, RxDouble>{};
+  List<DataRow> rows = [];  // List of DataRow for the table
+  List<TextEditingController> quantityControllers = [];  // List of controllers for quantity fields
+  final amounts = <ProductsModel, RxDouble>{};  // Map to store amounts for each product
   final Map<String, dynamic> args = Get.arguments ?? {};
   String total = '0';
   List<RxDouble> amountValues = [];
-  final ValueNotifier<double> _totalValueNotifier = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> _totalValueNotifier = ValueNotifier<double>(0.0);  // Notifier for total value
 
-  // Change fetchProducts method to return a stream of double
+  // Getter for total value notifier
   ValueNotifier<double> get totalValueNotifier => _totalValueNotifier;
 
+  // Method to fetch products and update the UI
   Future<void> fetchProducts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await productsViewModel.fetchProductsByBrands(globalselectedbrand);
     var products = productsViewModel.allProducts;
 
+    // Clear existing rows and controllers before adding new ones
     rows.clear();
     quantityControllers.clear();
     amountValues.clear();
@@ -48,11 +51,13 @@ class Productss extends ChangeNotifier {
     for (var i = 0; i < products.length; i++) {
       var product = products[i];
 
-      String qty = prefs.getString('qty$i') ?? '0'; // Load the saved quantity
+      // Load the saved quantity
+      String qty = prefs.getString('qty$i') ?? '0';
       TextEditingController controller = TextEditingController(text: '0');
       FocusNode focusNode = FocusNode();
       quantityControllers.add(controller);
 
+      // Initialize or retrieve the amount for the product
       RxDouble? amount = amounts[product];
       if (amount == null) {
         amount = RxDouble(0.0);
@@ -60,6 +65,7 @@ class Productss extends ChangeNotifier {
         amountValues.add(amount);
       }
 
+      // Add listener to update amount when quantity changes
       controller.addListener(() {
         double rate = double.parse(product.price ?? '0');
         int quantityValue = int.tryParse(controller.text) ?? 0;
@@ -67,6 +73,7 @@ class Productss extends ChangeNotifier {
         calculateTotal();
       });
 
+      // Add listener to restore default value when focus is lost
       focusNode.addListener(() {
         if (!focusNode.hasFocus && controller.text.isEmpty) {
           controller.text = '0';
@@ -93,20 +100,23 @@ class Productss extends ChangeNotifier {
     }
   }
 
+  // Method to clear all amounts
   clearAmounts() {
-    amounts.clear(); // Clear all amounts
+    amounts.clear();
   }
 
+  // Method to calculate the total amount
   void calculateTotal() {
     double totalAmount = 0.0;
     for (var amount in amounts.values) {
       totalAmount += amount.value;
     }
     total = totalAmount.toString();
-    _totalValueNotifier.value = totalAmount; // Update the value notifier
-    notifyListeners(); // Notify listeners of total change
+    _totalValueNotifier.value = totalAmount;  // Update the value notifier
+    notifyListeners();  // Notify listeners of total change
   }
 
+  // Method to check if the quantity at a specific index is zero
   bool isQuantityZeroAtIndex(int index) {
     if (index < 0 || index >= quantityControllers.length) {
       throw RangeError('Index out of range');
@@ -123,6 +133,7 @@ class FinalOrderBookingPage extends StatefulWidget {
 }
 
 class FinalOrderBookingPageState extends State<FinalOrderBookingPage> {
+  // Controllers for text input fields
   final TextEditingController _totalController = TextEditingController();
   final ordermasterViewModel = Get.put(OrderMasterViewModel());
   final orderdetailsViewModel = Get.put(OrderDetailsViewModel());
@@ -151,13 +162,14 @@ class FinalOrderBookingPageState extends State<FinalOrderBookingPage> {
   int serialCounter = 1;
   String currentMonth = DateFormat('MMM').format(DateTime.now());
   String currentUserId = '';
-  String newOrderId='';
+  String newOrderId = '';
   List<String> creditLimitOptions = [];
   String selectedCreditLimit = '';
   List<DataRow> rows = [];
   List<DataRow> filteredRows = [];
   List<Map<String, dynamic>> rowDataDetails = [];
 
+  // Function to filter data based on query
   void filterData(String query) {
     if (query.isEmpty) {
       setState(() {
@@ -168,8 +180,7 @@ class FinalOrderBookingPageState extends State<FinalOrderBookingPage> {
       String lowercaseQuery = query.toLowerCase();
       for (DataRow row in productsController.rows) {
         for (DataCell cell in row.cells) {
-          if (cell.child is Text &&
-              (cell.child as Text).data!.toLowerCase().contains(lowercaseQuery)) {
+          if (cell.child is Text && (cell.child as Text).data!.toLowerCase().contains(lowercaseQuery)) {
             tempList.add(row);
             break;
           }
@@ -191,17 +202,20 @@ class FinalOrderBookingPageState extends State<FinalOrderBookingPage> {
     _searchController = TextEditingController();
     addNewRow();
     addNewRow();
-   // onCreatee();
+    // onCreatee();
 
+    // Add listeners to controllers to calculate values on change
     addListenerToController(_discountController, _calculateSubTotal);
     addListenerToController(_paymentController, _calculateBalance);
     addListenerToController(_subTotalController, _calculateBalance);
   }
 
+  // Function to handle product changes
   void _onProductChange() {
     setState(() {}); // Update UI when products change
   }
 
+  // Function to fetch all products
   Future<void> fetchAllProducts() async {
     await productsController.fetchProducts();
     setState(() {
@@ -211,6 +225,7 @@ class FinalOrderBookingPageState extends State<FinalOrderBookingPage> {
 
   @override
   void dispose() {
+    // Dispose controllers to free up resources
     _ShopNameController.dispose();
     _ownerNameController.dispose();
     _phoneNoController.dispose();
@@ -231,12 +246,14 @@ class FinalOrderBookingPageState extends State<FinalOrderBookingPage> {
     super.dispose();
   }
 
+  // Function to add a listener to a controller
   void addListenerToController(TextEditingController controller, Function() listener) {
     controller.addListener(() {
       listener();
     });
   }
 
+  // Function to perform database operations on create
   Future<void> onCreatee() async {
     newDatabaseOutputs db = newDatabaseOutputs();
     // await db.showOrderMaster();

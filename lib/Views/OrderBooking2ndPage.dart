@@ -50,17 +50,21 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
   final TextEditingController orderIDController = TextEditingController();
   String currentOrderId = '';
   DBHelper dbmaster = DBHelper();
+
   @override
   void initState() {
     super.initState();
     onCreatee();
   }
+
+  // Method to get the formatted date
   String _getFormattedDate() {
     final now = DateTime.now();
     final formatter = DateFormat('dd-MMM-yyyy');
     return formatter.format(now);
   }
 
+  // Method to perform database operations on create
   Future<void> onCreatee() async {
     DatabaseOutputs db = DatabaseOutputs();
     await db.showOrderMaster();
@@ -68,6 +72,7 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
     await db.showShopVisit();
     await db.showStockCheckItems();
   }
+
   @override
   void dispose() {
     // Clear the data
@@ -75,45 +80,44 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
 
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
 
     if (kDebugMode) {
       print(orderMasterid);
     }
-    final data =
-    ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
-    // final orderId = data['orderId'];
+// Retrieve the passed data from the previous screen
+    final data = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+
+// Extract individual data elements from the passed data
     final orderDate = data['orderDate'];
-    final user_name = data ['userName'];
-    final shopName = data ['shopName'];
+    final user_name = data['userName'];
+    final shopName = data['shopName'];
     final creditLimit = data['creditLimit'];
-    // final discount = data['discount'];
-    // final subTotal = data['subTotal'];
-    final brand = data ['brand'];
-    final ownerName= data['ownerName'];
-    final phoneNo= data['phoneNo'];
-    //  final total = data ['total'];
-    final date = data ['date'];
-
+    final brand = data['brand'];
+    final ownerName = data['ownerName'];
+    final phoneNo = data['phoneNo'];
+    final date = data['date'];
     final requiredDelivery = data['requiredDelivery'];
     rowDataDetails = data['rowDataDetails'] as List<Map<String, dynamic>>;
+
     if (kDebugMode) {
       print(creditLimit);
     }
-    // print(discount);
-    // print(subTotal);
+
     if (kDebugMode) {
       print(requiredDelivery);
     }
-    //orderMasterid= orderId;
 
+// Initialize lists to store individual order details
     final selectedItems = <String>[];
     final quantities = <String>[];
     final rates = <String>[];
     final totalAmounts = <int>[];
 
+// Loop through rowDataDetails and populate the lists
     for (final rowData in rowDataDetails) {
       final selectedItem = rowData['selectedItem'] as String;
       final quantity = rowData['quantity'] as String;
@@ -124,11 +128,11 @@ class OrderBooking2ndPageState extends State<OrderBooking2ndPage> {
       quantities.add(quantity);
       rates.add(rate);
       totalAmounts.add(totalAmount);
-      // print('Rates: $rates');
     }
 
-    final totalAmount =
-    totalAmounts.fold<int>(0, (sum, amount) => sum + amount);
+// Calculate the total amount
+    final totalAmount = totalAmounts.fold<int>(0, (sum, amount) => sum + amount);
+
 
     return Scaffold(
         body:  WillPopScope(

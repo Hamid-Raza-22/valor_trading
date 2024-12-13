@@ -35,6 +35,13 @@ class AttendanceViewModel extends GetxController{
     fetchAllAttendanceOut();
 
   }
+
+  putAttendance(AttendanceModel attendanceModel){
+    attendanceRepository.update(attendanceModel);
+    fetchAllAttendance();
+
+  }
+
   addAttendance(AttendanceModel attendanceModel){
     attendanceRepository.add(attendanceModel);
     fetchAllAttendance();
@@ -43,20 +50,16 @@ class AttendanceViewModel extends GetxController{
 
   }
 
-  putAttendance(AttendanceModel attendanceModel){
-    attendanceRepository.update(attendanceModel);
-    fetchAllAttendance();
-
-  }
-
   deleteAttendance(int id){
     attendanceRepository.delete(id);
     fetchAllAttendance();
 
   }
+
   postAttendance(){
     attendanceRepository.postAttendanceTable();
   }
+
   postAttendanceOut(){
     attendanceRepository.postAttendanceOutTable();
   }

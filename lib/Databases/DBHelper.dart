@@ -62,7 +62,6 @@ class DBHelper {
       await db.execute("CREATE TABLE shopVisit (id TEXT PRIMARY KEY, date TEXT, shopName TEXT, userId TEXT, city TEXT, bookerName TEXT, brand TEXT, walkthrough TEXT, planogram TEXT, signage TEXT, productReviewed TEXT, feedback TEXT, latitude TEXT, longitude TEXT, address TEXT, body BLOB)");
       await db.execute("CREATE TABLE Stock_Check_Items(id INTEGER PRIMARY KEY AUTOINCREMENT, shopvisitId TEXT, itemDesc TEXT, qty TEXT, FOREIGN KEY (shopvisitId) REFERENCES shopVisit(id))");
       await db.execute("CREATE TABLE location(id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, fileName TEXT, userId TEXT, totalDistance TEXT, userName TEXT, posted INTEGER DEFAULT 0, body BLOB)");
-
       // Upgrade functionalities for version 2
       if (version >= 2) {
         if (kDebugMode) {
@@ -151,10 +150,6 @@ class DBHelper {
 
 
 
-
-
-
-
 // function for the accounts
   Future<bool> insertAccountsData(List<dynamic> dataList) async {
     final Database db = await initDatabase();
@@ -170,6 +165,7 @@ class DBHelper {
       return false;
     }
   }
+
   Future<List<Map<String, dynamic>>?> getAllAccountsData() async {
     final Database db = await initDatabase();
     try {
@@ -886,8 +882,6 @@ class DBHelper {
     }
   }
 
-
-
   Future<void> getHighestSerialNo() async {
     int serial;
 
@@ -1293,8 +1287,6 @@ class DBHelper {
     }
   }
 
-
-
   Future<List<String>> getShopNames() async {
     final Database db = await initDatabase();
     try {
@@ -1392,8 +1384,6 @@ class DBHelper {
     }
   }
 
-
-
   Future<bool> insertOwnerData(List<dynamic> dataList) async {
     final Database db = await initDatabase();
     try {
@@ -1407,7 +1397,8 @@ class DBHelper {
       }
       return false;
     }
-  } Future<bool> insertPakCitiesData(List<dynamic> dataList) async {
+  }
+  Future<bool> insertPakCitiesData(List<dynamic> dataList) async {
     final Database db = await initDatabase();
     try {
       for (var data in dataList) {
@@ -1574,9 +1565,6 @@ class DBHelper {
       return false;
     }
   }
-
-
-
   Future<bool> insertOrderBookingStatusData(List<dynamic> dataList) async {
     final Database db = await initDatabase();
     try {
@@ -1797,7 +1785,6 @@ class DBHelper {
       return null;
     }
   }
-
   Future<List<Map<String, dynamic>>?> getOrderDetailsDB() async {
     final Database db = await initDatabase();
     try {
@@ -1810,9 +1797,6 @@ class DBHelper {
       return null;
     }
   }
-
-
-
 
   Future<bool> insertProductCategory(List<dynamic> dataList) async {
     final Database db = await initDatabase();
@@ -1829,7 +1813,6 @@ class DBHelper {
     }
   }
 
-
   // Future<List<String>> getBrandItems() async {
   //   final Database db = await initDatabase();
   //   try {
@@ -1840,8 +1823,6 @@ class DBHelper {
   //     return [];
   //   }
   // }
-
-
 
   Future<List<Map<String, dynamic>>?> getAllPCs() async {
     final Database db = await initDatabase();
@@ -2113,7 +2094,8 @@ class DBHelper {
       }
       return null;
     }
-  }Future<String?> getUserSM(String userId) async {
+  }
+  Future<String?> getUserSM(String userId) async {
     final Database db = await initDatabase();
     try {
       var results = await db.rawQuery("select SM_ID from login where user_id = '$userId'");

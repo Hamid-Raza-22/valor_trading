@@ -16,7 +16,18 @@ class AttendanceRepository {
 
   Future<List<AttendanceModel>> getAttendance() async {
     var dbClient = await dbHelper.db;
-    List<Map> maps = await dbClient!.query('attendance', columns: ['id', 'date' , 'timeIn' , 'userId' , 'latIn' , 'lngIn','bookerName','city','designation', 'address' ]);
+    List<Map> maps = await dbClient!.query('attendance', columns: [
+      'id',
+      'date',
+      'timeIn',
+      'userId',
+      'latIn',
+      'lngIn',
+      'bookerName',
+      'city',
+      'designation',
+      'address'
+    ]);
     List<AttendanceModel> attendance = [];
 
     for (int i = 0; i < maps.length; i++) {
@@ -50,20 +61,19 @@ class AttendanceRepository {
             bookerName: i['bookerName'].toString(),
             city: i['city'].toString(),
             designation: i['designation'].toString(),
-            address:  i['address'].toString(),
+            address: i['address'].toString(),
           );
 
           try {
             final results = await Future.wait([
               api.masterPost(v.toMap(), attendanceApi),
-              // api.masterPost(v.toMap(), 'https://apex.oracle.com/pls/apex/metaxpertss/attendance/post/'),
             ]);
-
             if (results[0] == true) {
               if (kDebugMode) {
                 print('Successfully posted attendance for ID: ${i['id']}');
               }
-              await db.rawDelete("DELETE FROM attendance WHERE id = ?", [i['id']]);
+              await db.rawDelete(
+                  "DELETE FROM attendance WHERE id = ?", [i['id']]);
             } else {
               if (kDebugMode) {
                 print('Failed to post attendance for ID: ${i['id']}');
@@ -83,7 +93,9 @@ class AttendanceRepository {
     } finally {
       PostingStatus.isPosting.value = false; // Set posting status to false
     }
-  }  // Future<List<AttendanceModel>> getShopName() async {
+  }
+
+  // Future<List<AttendanceModel>> getShopName() async {
   //   var dbClient = await dbHelper.db;
   //   List<Map> maps = await dbClient!.query('shop', columns: ['id', 'shopName']);
   //   List<AttendanceModel> shop = [];
@@ -115,7 +127,18 @@ class AttendanceRepository {
 
   Future<List<AttendanceOutModel>> getAttendanceOut() async {
     var dbClient = await dbHelper.db;
-    List<Map> maps = await dbClient!.query('attendanceOut', columns: ['id', 'date' , 'timeOut' ,'totalTime', 'userId' , 'latOut', 'lngOut','totalDistance','address', 'posted']);
+    List<Map> maps = await dbClient!.query('attendanceOut', columns: [
+      'id',
+      'date',
+      'timeOut',
+      'totalTime',
+      'userId',
+      'latOut',
+      'lngOut',
+      'totalDistance',
+      'address',
+      'posted'
+    ]);
     List<AttendanceOutModel> attendanceout = [];
 
     for (int i = 0; i < maps.length; i++) {
@@ -147,7 +170,7 @@ class AttendanceRepository {
               totalTime: i['totalTime'].toString(),
               latOut: i['latOut'].toString(),
               lngOut: i['lngOut'].toString(),
-              address:  i['address'].toString(),
+              address: i['address'].toString(),
               totalDistance: i['totalDistance']?.toString() ?? '0.0'
           );
           var result1 = await api.masterPost(v.toMap(), attendanceOutApi);
@@ -158,7 +181,8 @@ class AttendanceRepository {
             if (kDebugMode) {
               print('successfully post');
             }
-            await db.rawDelete("DELETE FROM attendanceOut WHERE id = '${i['id']}'");
+            await db.rawDelete(
+                "DELETE FROM attendanceOut WHERE id = '${i['id']}'");
           }
         }
       }
@@ -170,29 +194,28 @@ class AttendanceRepository {
       PostingStatus.isPosting.value = false; // Set posting status to false
     }
   }
-  Future<int> addOut(AttendanceOutModel attendanceoutModel) async{
+
+  Future<int> addOut(AttendanceOutModel attendanceoutModel) async {
     var dbClient = await dbHelper.db;
-    return await dbClient!.insert('attendanceOut' , attendanceoutModel.toMap());
+    return await dbClient!.insert('attendanceOut', attendanceoutModel.toMap());
   }
 
-  Future<int> add(AttendanceModel attendanceModel) async{
+  Future<int> add(AttendanceModel attendanceModel) async {
     var dbClient = await dbHelper.db;
-    return await dbClient!.insert('attendance' , attendanceModel.toMap());
+    return await dbClient!.insert('attendance', attendanceModel.toMap());
   }
 
-  Future<int> update(AttendanceModel attendanceModel) async{
+  Future<int> update(AttendanceModel attendanceModel) async {
     var dbClient = await dbHelper.db;
     return await dbClient!.update('attendance', attendanceModel.toMap(),
-        where: 'id= ?', whereArgs: [attendanceModel.id] );
+        where: 'id= ?', whereArgs: [attendanceModel.id]);
   }
 
-  Future<int> delete(int id) async{
+  Future<int> delete(int id) async {
     var dbClient = await dbHelper.db;
     return await dbClient!.delete('attendance',
-        where: 'id=?', whereArgs: [id] );
+        where: 'id=?', whereArgs: [id]);
   }
-
-
 }
 
 

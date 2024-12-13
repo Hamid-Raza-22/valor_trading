@@ -46,25 +46,7 @@ class ApiServices extends BaseApiServices {
   }
 
   @override
-  Future<dynamic> postApi(var data, dynamic url) async {
 
-
-    dynamic responseJson;
-    dynamic responseJson1;
-
-    try {
-      final client = await getClient(tokenEndpoint, identifier, secret);
-      final response = await client.post(Uri.parse(url), body: data,).timeout(const Duration(seconds: 10));
-      responseJson = returnResponse(response);
-    } catch (e) {
-
-      final client1 = await getClient(tokenEndpoint1, identifier1, secret1);
-      final response1 = await client1.post(Uri.parse(url), body: data,).timeout(const Duration(seconds: 10));
-      responseJson1 = returnResponse(response1);
-    }
-
-    return responseJson ?? responseJson1;
-  }
 
 
 @override

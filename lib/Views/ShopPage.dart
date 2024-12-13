@@ -26,7 +26,6 @@ import '../Models/ShopModel.dart';
 import '../main.dart';
 
 
-
 class ShopPage extends StatefulWidget {
   const ShopPage({Key? key}) : super(key: key);
 
@@ -34,6 +33,7 @@ class ShopPage extends StatefulWidget {
   State<ShopPage> createState() => _ShopPageState();
 }
 
+// Formatter to allow only alphabets
 class AlphabeticInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -50,6 +50,7 @@ class AlphabeticInputFormatter extends TextInputFormatter {
   }
 }
 
+// Formatter to format CNIC input
 class CNICFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -84,9 +85,9 @@ class CNICFormatter extends TextInputFormatter {
 }
 
 class _ShopPageState extends State<ShopPage> {
-
   final shopViewModel = Get.put(ShopViewModel());
 
+  // Controllers for text input fields
   final TextEditingController shopNameController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController shopAddressController = TextEditingController();
@@ -95,6 +96,7 @@ class _ShopPageState extends State<ShopPage> {
   final TextEditingController phoneNoController = TextEditingController();
   final TextEditingController alternativePhoneNoController = TextEditingController();
 
+  // Focus nodes for managing focus in text fields
   final FocusNode shopNameFocusNode = FocusNode();
   final FocusNode cityFocusNode = FocusNode();
   final FocusNode shopAddressFocusNode = FocusNode();
@@ -122,34 +124,33 @@ class _ShopPageState extends State<ShopPage> {
 
   List<Map<String, dynamic>> shopOwners = [];
 
+  // Function to check user ID and fetch shop names
   Future<void> _checkUserIdAndFetchShopNames() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userDesignation = prefs.getString('userDesignation');
 
+    // Check user designation and set cityController text accordingly
     if (userDesignation != 'SM' && userDesignation != 'NSM' &&
         userDesignation != 'RSM' && userDesignation != 'ASM' &&
         userDesignation != 'SPO' && userDesignation != 'SOS') {
-      //  await fetchShopNames();
       setState(() {
         cityController.text = userCitys;
-        //  distributorNameController.text = 'M.A Traders Sialkot';
-        cityController.selection =
-            TextSelection.collapsed(offset: cityController.text.length);
+        cityController.selection = TextSelection.collapsed(offset: cityController.text.length);
       });
     } else {
       await fetchCitiesNames();
-      //await fetchShopNames1();
     }
   }
 
+  // Function to fetch city names
   Future<void> fetchCitiesNames() async {
     List<dynamic> bussinessName = await dbHelper.getCitiesNames();
     setState(() {
       // Explicitly cast each element to String
-      citiesDropdownItems =
-          bussinessName.map((dynamic item) => item.toString()).toSet().toList();
+      citiesDropdownItems = bussinessName.map((dynamic item) => item.toString()).toSet().toList();
     });
   }
+
 
   // Future<void> fetchShopNames() async {
   //   String userCity = userCitys;
@@ -167,14 +168,15 @@ class _ShopPageState extends State<ShopPage> {
   //     dropdownItems = bussinessName.map((dynamic item) => item.toString()).toSet().toList();
   //   });
   // }
+// Function to save an image
   Future<void> saveImage() async {
     try {
+      // Get the application documents directory
       final directory = await getApplicationDocumentsDirectory();
       final filePath = '${directory.path}/captured_image.jpg';
 
-      // Compress the image76
-      Uint8List? compressedImageBytes = await FlutterImageCompress
-          .compressWithFile(
+      // Compress the image
+      Uint8List? compressedImageBytes = await FlutterImageCompress.compressWithFile(
         _imageFile!.path,
         minWidth: 400,
         minHeight: 600,
@@ -197,11 +199,14 @@ class _ShopPageState extends State<ShopPage> {
   @override
   void initState() {
     super.initState();
+    // Save current location when initializing (if needed)
     // saveCurrentLocation(context);
     _checkUserIdAndFetchShopNames();
   }
-  bool isSwitchDisabled = false; // Add this state variable
 
+  bool isSwitchDisabled = false; // State variable to disable switch
+
+// Function to save the current location
   Future<void> saveCurrentLocation(BuildContext context) async {
     if (!mounted) return; // Check if the widget is still mounted
 
@@ -210,10 +215,12 @@ class _ShopPageState extends State<ShopPage> {
       isSwitchDisabled = true;  // Disable the switch while loading
     });
 
+    // Request location permission
     PermissionStatus permission = await Permission.location.request();
 
     if (permission.isGranted) {
       try {
+        // Get the current position
         Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
         );
@@ -234,6 +241,7 @@ class _ShopPageState extends State<ShopPage> {
           Placemark? currentPlace = placemarks.isNotEmpty ? placemarks[0] : null;
 
           if (currentPlace != null) {
+            // Construct the address from the placemark
             address1 = "${currentPlace.thoroughfare ?? ''} ${currentPlace.subLocality ?? ''}, ${currentPlace.locality ?? ''} ${currentPlace.postalCode ?? ''}, ${currentPlace.country ?? ''}";
 
             // Check if the constructed address is empty, fallback to "Pakistan"
@@ -255,7 +263,6 @@ class _ShopPageState extends State<ShopPage> {
         if (kDebugMode) {
           print('Address is: $address1');
         }
-
       } catch (e) {
         if (kDebugMode) {
           print('Error getting location: $e');
@@ -275,7 +282,7 @@ class _ShopPageState extends State<ShopPage> {
       );
     }
 
-    if (!mounted) return; // Check again before calling setState()
+    if (!mounted) return; // Check again before calling setState
     setState(() {
       isLoadingLocation = false; // Stop loading
       isSwitchDisabled = false;  // Re-enable the switch after loading
@@ -283,10 +290,9 @@ class _ShopPageState extends State<ShopPage> {
   }
 
 
-
-
   @override
   void dispose() {
+    // Dispose controllers to free up resources
     shopNameController.dispose();
     cityController.dispose();
     shopAddressController.dispose();
@@ -295,6 +301,7 @@ class _ShopPageState extends State<ShopPage> {
     phoneNoController.dispose();
     alternativePhoneNoController.dispose();
 
+    // Dispose focus nodes to free up resources
     shopNameFocusNode.dispose();
     cityFocusNode.dispose();
     shopAddressFocusNode.dispose();
@@ -306,6 +313,7 @@ class _ShopPageState extends State<ShopPage> {
     super.dispose();
   }
 
+// Function to validate and save shop information
   Future<void> _validateAndSave() async {
     setState(() {
       isButtonPressed2 = true;
@@ -320,6 +328,7 @@ class _ShopPageState extends State<ShopPage> {
       if (userDesignation == 'RSM' || userDesignation == 'NSM' ||
           userDesignation == 'SM' || userDesignation == 'ASM' ||
           userDesignation == 'SPO' || userDesignation == 'SOS') {
+        // Add shop name to Hive box for shop names
         var box = await Hive.openBox('shopNames');
         List<String> shopNames = box.get('shopNames')?.cast<String>() ?? [];
         shopNames.add(shopNameController.text);
@@ -328,24 +337,22 @@ class _ShopPageState extends State<ShopPage> {
         if (kDebugMode) {
           print(' Hive shopNames');
         }
-        isCityValid = selectedCity.isNotEmpty &&
-            citiesDropdownItems.contains(selectedCity);
+        isCityValid = selectedCity.isNotEmpty && citiesDropdownItems.contains(selectedCity);
       } else {
+        // Add shop name to Hive box for shop names by cities
         var box = await Hive.openBox('shopNamesByCities');
-        List<String> shopNamesByCities = box.get('shopNamesByCities')?.cast<
-            String>() ?? [];
+        List<String> shopNamesByCities = box.get('shopNamesByCities')?.cast<String>() ?? [];
         shopNamesByCities.add(shopNameController.text);
         await box.put('shopNamesByCities', shopNamesByCities);
         await box.close();
         if (kDebugMode) {
-          print(' Hive shopNamesby cities');
+          print(' Hive shopNames by cities');
         }
       }
 
       if (isCityValid) {
-        if (
-        // _imageFile == null ||
-        isLocationFetched == false ||
+        // Validate all required fields
+        if (isLocationFetched == false ||
             shopNameController.text.isEmpty ||
             cityController.text.isEmpty ||
             shopAddressController.text.isEmpty ||
@@ -355,7 +362,7 @@ class _ShopPageState extends State<ShopPage> {
             alternativePhoneNoController.text.isEmpty) {
           // Show toast message for invalid input
           Fluttertoast.showToast(
-            msg: 'Please fill all fields properly and Enable GPS.',
+            msg: 'Please fill all fields properly and enable GPS.',
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             backgroundColor: Colors.red,
@@ -388,15 +395,9 @@ class _ShopPageState extends State<ShopPage> {
           showLoading = true;
         });
         isOrderConfirmedback = true;
-        // Proceed with saving data if validation passes
-        // Add your data saving logic here
-        // String imagePath =  _imageFile!.path;
-        // List<int> imageBytesList = await File(imagePath).readAsBytes();
-        // Uint8List? imageBytes = Uint8List.fromList(imageBytesList);
-        var id = await customAlphabet('1234567890', 12);
 
-        // double? latitude = currentLocation['latitude'];
-        // double? longitude = currentLocation['longitude'];
+        // Save shop information if validation passes
+        var id = await customAlphabet('1234567890', 12);
 
         shopViewModel.addShop(ShopModel(
             id: int.parse(id),
@@ -413,41 +414,18 @@ class _ShopPageState extends State<ShopPage> {
             userId: userId,
             brand: userBrand,
             address: shopAddress
-          //body: imageBytes,
-          // ... existing parameters ...
-          // latitude: shopViewModel.latitude,
-          // longitude: shopViewModel.longitude,
         ));
-
 
         String shopid = await shopViewModel.fetchLastShopId();
         shopId = int.parse(shopid);
 
-
-        //
-        //
-        // shopNameController.text = "";
-        // cityController.text = "";
-        // shopAddressController.text = "";
-        // ownerNameController.text = "";
-        // ownerCNICController.text = "";
-        // phoneNoController.text = "";
-        // alternativePhoneNoController.text = "";
         bool isConnected = await isInternetAvailable();
         if (isConnected == true) {
           shopViewModel.postShop();
         }
 
-        // DBHelper dbmaster = DBHelper();
-        //
-        // dbmaster.postShopTable();
-
         // Navigate to the home page after saving
-        // Inside the ShopPage where you navigate back to HomePage
-        // Introduce a 5-second delay
-
         await Future.delayed(const Duration(seconds: 8));
-
         Navigator.pop(context);
         const HomePage(); // Stop the timer when navigating back
 
@@ -490,7 +468,6 @@ class _ShopPageState extends State<ShopPage> {
 
   bool isGpsEnabled = false;
   bool isLoadingLocation = false;
-
 
   @override
   Widget build(BuildContext context) {
