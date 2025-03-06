@@ -534,7 +534,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       await location.enableBackgroundMode(enable: true);
       await location.changeSettings(
           interval: 300, accuracy: loc.LocationAccuracy.high);
-      locationbool = true;
+       locationbool = true;
       service.startService();
 
       var id = customAlphabet('1234567890', 10);
@@ -705,14 +705,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     Duration duration = Duration(seconds: seconds);
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String hours = twoDigits(duration.inHours);
-
     String minutes = twoDigits(duration.inMinutes.remainder(60));
     String secondsFormatted = twoDigits(duration.inSeconds.remainder(60));
     return '$hours:$minutes:$secondsFormatted';
   }
 
 
-  @override
   @override
   void dispose() {
     // Cancel the timer when the widget is disposed

@@ -12,7 +12,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:valor_trading/Views/SM/sm_homepage.dart';
-
 import '../../API/Globals.dart';
 import '../../Models/HeadsShopVistModels.dart';
 import '../../Models/ShopVisitModels.dart';
@@ -357,7 +356,7 @@ class ShopVisitPageState extends State<ShopVisitPage> {
     );
   }
 
-  Widget _buildAnimatedDropdown(String label, List<String> items, IconData icon, TextEditingController controller, VoidCallback onTap) {
+  Widget  _buildAnimatedDropdown(String label, List<String> items, IconData icon, TextEditingController controller, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(

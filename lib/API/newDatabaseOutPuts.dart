@@ -57,7 +57,7 @@ class newDatabaseOutputs {
       }
     }await db.getAllLogins();
 
-    // await showLoginGetData();
+     await showLoginGetData();
   }
   // function for the update recovery from the data table
   Future<void> updateRecoveryFormGetData() async {

@@ -3,7 +3,7 @@ import 'dart:io' as io;
 import 'dart:io' show Directory, InternetAddress, Platform, SocketException;
 import 'dart:ui' show DartPluginRegistrant;
 // import 'package:connectivity/connectivity.dart';
-import 'package:connectivity/connectivity.dart';
+//  import 'package:connectivity/connectivity.dart';
 import 'package:device_info_plus/device_info_plus.dart' show DeviceInfoPlugin;
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -22,7 +22,7 @@ import 'package:valor_trading/Views/OrderBooking2ndPage.dart';
 import 'package:valor_trading/Views/ReturnFormPage.dart';
 import 'package:valor_trading/Views/ShopVisit.dart';
 import 'package:valor_trading/Views/login.dart';
-// import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:io'; // For InternetAddress and SocketException
 import '../Tracker/trac.dart' show startTimer;
 import '../Views/PolicyDBox.dart';
@@ -228,19 +228,19 @@ Future<void> initializeServiceLocation() async {
       onForeground: onStart,
     ),
   );
-  monitorInternetConnection(); // Add this line to monitor connectivity changes
+ // monitorInternetConnection(); // Add this line to monitor connectivity changes
 
 }
 
 
-void monitorInternetConnection() {
-  Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-    if (result == ConnectivityResult.mobile ||
-        result == ConnectivityResult.wifi) {
-      // backgroundTask();
-    }
-  });
-}
+// void monitorInternetConnection() {
+//   Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+//     if (result == ConnectivityResult.mobile ||
+//         result == ConnectivityResult.wifi) {
+//       // backgroundTask();
+//     }
+//   });
+// }
 Future<bool> isInternetAvailable() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
 
@@ -307,7 +307,7 @@ void onStart1(ServiceInstance service1) async {
   );
 }
 
-
+///background foreground services for location
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
@@ -338,7 +338,7 @@ void onStart(ServiceInstance service) async {
     //stopListeningLocation();
     FlutterLocalNotificationsPlugin().cancelAll();
   });
-  monitorInternetConnection(); // Add this line to monitor connectivity changes
+  //monitorInternetConnection(); // Add this line to monitor connectivity changes
 
   Timer.periodic(const Duration(minutes: 10), (timer) async {
     if (service is AndroidServiceInstance) {
@@ -375,7 +375,7 @@ void onStart(ServiceInstance service) async {
     startTimer();
     locationService.listenLocation();
   }
-
+///background timer
   Timer.periodic(const Duration(seconds: 1), (timer) async {
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
@@ -452,6 +452,7 @@ String _formatDuration(String secondsString) {
   return '$hours:$minutes:$secondsFormatted';
 }
 
+///background post functions
 
 backgroundTask() async {
 
